@@ -23,7 +23,7 @@ import {
   registerDesk,
 } from "./state.js";
 
-import { render, applyHighlight, buildLegend } from "./render.js";
+import { render, applyHighlight, setTeamClickHandler } from "./render.js";
 
 import {
   loadSVG,
@@ -81,6 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   elDay2.value         = "tue";
   AppState.currentDay2 = "tue";
+
+  // Register the team-chip click handler (keeps state mutation out of render.js)
+  setTeamClickHandler(teamId => {
+    if (!AppState.selectedDesks.length) return;
+    assignDesks(AppState.selectedDesks, teamId, AppState.currentDay);
+    render();
+  });
 
   // ── Load SVG then initialise ─────────────────────────────────────────────────
 
@@ -201,7 +208,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!name || !name.trim()) return;
     addTeam(id, name.trim());
     saveState();
-    buildLegend();
     render();
   }
 

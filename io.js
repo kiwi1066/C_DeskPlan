@@ -10,12 +10,11 @@ import {
   addTeam,
   removeAllTeams,
   saveState,
-  registerDesk,
   getSortedTeamIds,
   teamColor,
 } from "./state.js";
 
-import { render, buildLegend } from "./render.js";
+import { render } from "./render.js";
 
 // ── SVG loader ────────────────────────────────────────────────────────────────
 
@@ -117,7 +116,6 @@ export function handleTeamImport(file) {
     });
 
     saveState();
-    buildLegend();
     render();
   });
 }

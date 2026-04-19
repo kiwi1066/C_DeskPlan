@@ -6,11 +6,9 @@
 
 import {
   AppState,
-  DAYS,
   getSortedTeamIds,
   teamColor,
   getDaySummary,
-  assignDesks,
 } from "./state.js";
 
 // ── Floor plan colouring ──────────────────────────────────────────────────────
@@ -51,6 +49,10 @@ export function renderContainer(containerId, day) {
   });
 }
 
+// Callback set by app.js so render.js never imports state-mutation functions
+let _onTeamClick = null;
+export function setTeamClickHandler(fn) { _onTeamClick = fn; }
+
 /** Renders the main (single) view */
 export function render() {
   if (AppState.mode === "compare") {
@@ -60,7 +62,7 @@ export function render() {
     renderContainer("svgContainer", AppState.currentDay);
   }
 
-  buildLegend();
+  buildLegend(_onTeamClick);
   updateSummary();
   applyHighlight();
 }
@@ -85,7 +87,10 @@ export function applyHighlight() {
 
 // ── Legend ────────────────────────────────────────────────────────────────────
 
-export function buildLegend() {
+/**
+ * @param {Function} [onTeamClick]  called with (teamId) when a chip is clicked
+ */
+export function buildLegend(onTeamClick) {
   const legend = document.getElementById("legend");
   if (!legend) return;
 
@@ -102,7 +107,7 @@ export function buildLegend() {
     const name  = AppState.teamNames[teamId];
 
     const chip = document.createElement("div");
-    chip.className   = "chip";
+    chip.className    = "chip";
     chip.dataset.team = teamId;
     chip.title        = `Assign to ${teamId} ${name}`;
 
@@ -111,11 +116,9 @@ export function buildLegend() {
       <span class="chip-label">${teamId} ${name}</span>
     `;
 
-    chip.addEventListener("click", () => {
-      if (!AppState.selectedDesks.length) return;
-      assignDesks(AppState.selectedDesks, teamId, AppState.currentDay);
-      render();
-    });
+    if (onTeamClick) {
+      chip.addEventListener("click", () => onTeamClick(teamId));
+    }
 
     legend.appendChild(chip);
   });
