@@ -74,7 +74,11 @@ export function teamColor(teamId) {
 export function assignDesks(deskIds, teamId, day) {
   pushHistory();
   deskIds.forEach(id => {
-    if (AppState.deskData[id]) AppState.deskData[id][day] = teamId;
+    if (AppState.deskData[id]) {
+      AppState.deskData[id][day] = teamId;
+    } else {
+      console.warn(`assignDesks: desk "${id}" not found in deskData`);
+    }
   });
   saveState();
 }
@@ -155,13 +159,19 @@ export function loadState() {
     if (!raw) return;
     const saved = JSON.parse(raw);
 
-    // Support old saves that stored deskData at the top level
-    if (saved.deskData) {
-      AppState.deskData  = saved.deskData;
-      AppState.teamNames = saved.teamNames || {};
-    } else {
-      AppState.deskData = saved;
-    }
+    const savedDesks = saved.deskData || saved;
+    const savedTeams = saved.teamNames || {};
+
+    // Merge saved assignments into already-registered desks.
+    // Never replace AppState.deskData outright — desks registered from the SVG
+    // must remain in the object even if they weren't in a previous save.
+    Object.keys(savedDesks).forEach(id => {
+      if (AppState.deskData[id]) {
+        AppState.deskData[id] = savedDesks[id];
+      }
+    });
+
+    AppState.teamNames = savedTeams;
   } catch (e) {
     console.warn("Could not load state:", e);
   }
