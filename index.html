@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Level 11 — Desk Planner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════════════ -->
+  <header class="app-header">
+    <h1>Level 11 — Desk Planner</h1>
+  </header>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       CONTROLS PANEL
+  ═══════════════════════════════════════════════════ -->
+  <div id="controls">
+
+    <!-- View row: Mode + Day selectors -->
+    <div class="view-row">
+
+      <div class="field-group">
+        <span class="field-label">Mode</span>
+        <select id="mode">
+          <option value="single">Single</option>
+          <option value="compare">Compare</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Day</span>
+        <select id="day"></select>
+      </div>
+
+      <div id="compareControls" class="field-group">
+        <span class="field-label">vs</span>
+        <select id="day2"></select>
+      </div>
+
+    </div><!-- /view-row -->
+
+
+    <!-- Edit controls (hidden in compare mode) -->
+    <div id="editControls">
+
+      <!-- File actions -->
+      <div class="toolbar-section">
+        <span class="toolbar-section-label">File</span>
+        <button id="btn-import-teams">👥 Import Teams</button>
+        <button id="btn-import">📂 Import</button>
+        <button id="btn-export">⬇ Export</button>
+        <button id="btn-export-image">📸 Export Image</button>
+      </div>
+
+      <!-- Edit actions -->
+      <div class="toolbar-section">
+        <span class="toolbar-section-label">Edit</span>
+        <button id="btn-copy">📋 Copy Day</button>
+        <button id="btn-undo">↩ Undo</button>
+        <button id="btn-clear-desks">🧽 Clear Desks</button>
+        <button id="btn-clear-all">🧹 Clear All</button>
+        <button id="btn-reset" class="btn-danger">🗑 Reset</button>
+      </div>
+
+      <!-- Selection + Help -->
+      <div class="toolbar-section">
+        <span class="toolbar-section-label">Select</span>
+        <button id="btn-multi">🧩 Multi</button>
+        <button id="btn-add-team">➕ Add Team</button>
+        <button id="btn-help">❓ Help</button>
+      </div>
+
+      <!-- Teams legend -->
+      <div class="section-header">Teams</div>
+      <div id="legend"></div>
+
+      <!-- Desk allocation summary -->
+      <div class="summary-wrap">
+        <div class="section-header">Desk Allocation Summary</div>
+        <div id="summary"></div>
+      </div>
+
+    </div><!-- /editControls -->
+
+  </div><!-- /controls -->
+
+
+  <!-- ═══════════════════════════════════════════════════
+       COPY MODAL
+  ═══════════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+
+  <div id="copyModal" role="dialog" aria-modal="true" aria-labelledby="copyModalTitle">
+    <h3 id="copyModalTitle">Copy Day To…</h3>
+    <div id="copyDays"></div>
+    <div class="modal-actions">
+      <button id="btn-apply-copy">Apply</button>
+      <button id="btn-cancel-copy" class="btn-danger">Cancel</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       FLOOR PLANS
+  ═══════════════════════════════════════════════════ -->
+  <div class="map-area">
+
+    <!-- Single view -->
+    <div id="mapSingle" class="mapBox">
+      <img src="floorPlan.png" alt="Office floor plan">
+      <div id="svgContainer" class="svgLayer"></div>
+    </div>
+
+    <!-- Compare view -->
+    <div id="compareWrap">
+
+      <div class="compare-panel">
+        <div class="compare-label" id="compareLabel1">—</div>
+        <div class="mapBox">
+          <img src="floorPlan.png" alt="Office floor plan — Day 1">
+          <div id="svgContainer1" class="svgLayer"></div>
+        </div>
+      </div>
+
+      <div class="compare-panel">
+        <div class="compare-label" id="compareLabel2">—</div>
+        <div class="mapBox">
+          <img src="floorPlan.png" alt="Office floor plan — Day 2">
+          <div id="svgContainer2" class="svgLayer"></div>
+        </div>
+      </div>
+
+    </div><!-- /compareWrap -->
+
+  </div><!-- /map-area -->
+
+
+  <!-- ═══════════════════════════════════════════════════
+       HIDDEN FILE INPUTS
+  ═══════════════════════════════════════════════════ -->
+  <input type="file" id="fileInput"     accept=".csv" style="display:none" aria-hidden="true">
+  <input type="file" id="teamFileInput" accept=".csv" style="display:none" aria-hidden="true">
+
+
+  <!-- Entry point — ES module so imports work natively -->
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>

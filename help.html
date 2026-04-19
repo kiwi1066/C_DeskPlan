@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desk Planner — Help</title>
+
+  <style>
+    :root {
+      --brand-dark:  #0b3c66;
+      --brand-mid:   #145a9c;
+      --brand-light: #eef6ff;
+      --bg:          #f0f3f7;
+      --surface:     #ffffff;
+      --border:      #dde3ea;
+      --text:        #1a2535;
+      --radius:      10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .app-header {
+      background: linear-gradient(90deg, var(--brand-dark), var(--brand-mid));
+      color: #fff;
+      padding: 14px 24px;
+    }
+
+    .app-header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+
+    .container {
+      max-width: 860px;
+      margin: 20px auto;
+      background: var(--surface);
+      padding: 28px 32px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    h2 { color: var(--brand-dark); margin-top: 30px; font-size: 16px; }
+    h3 { font-size: 14px; margin: 18px 0 6px; }
+
+    p, li { line-height: 1.65; }
+
+    ul { padding-left: 20px; }
+    ul li { margin-bottom: 4px; }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+    .tip {
+      background: var(--brand-light);
+      border-left: 4px solid var(--brand-mid);
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      margin: 14px 0;
+      font-size: 13px;
+    }
+
+    /* Simulated toolbar pill to match app buttons */
+    .btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--brand-dark);
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    /* Button group tables */
+    .btn-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    .btn-table tr + tr td { border-top: 1px solid var(--border); }
+    .btn-table td { padding: 8px 6px; vertical-align: top; }
+    .btn-table td:first-child { width: 160px; white-space: nowrap; }
+
+    .group-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #6b7a8d;
+      margin: 22px 0 6px;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 18px 16px; margin: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <h1>Desk Planner — User Guide</h1>
+  </header>
+
+  <div class="container">
+
+    <h2>Overview</h2>
+    <p>
+      The Desk Planner lets you visually assign desks to teams across the working week
+      using an interactive floor plan. Import teams, allocate desks by day, and export
+      your plan as a CSV or image for sharing and archiving.
+    </p>
+
+    <hr>
+
+    <h2>Basic Workflow</h2>
+    <ol>
+      <li>Select a <strong>Day</strong> from the day dropdown.</li>
+      <li>Add teams — either via <strong>Import Teams</strong> (CSV) or the <strong>Add Team</strong> button.</li>
+      <li>Click one or more desks on the floor plan to select them.
+          Use <strong>Multi</strong> mode or hold <kbd>Ctrl</kbd> to select multiple desks at once.</li>
+      <li>Click a <strong>team chip</strong> in the Teams legend — the selected desks are assigned to that team.</li>
+      <li>Repeat for each day. Use <strong>Copy Day</strong> to duplicate Monday's plan across the week.</li>
+    </ol>
+
+    <div class="tip">
+      <strong>Tip:</strong> Desk colours match the team legend. Hover over a coloured desk
+      to see the team name as a tooltip.
+    </div>
+
+    <hr>
+
+    <h2>Toolbar Reference</h2>
+
+    <p class="group-label">File</p>
+    <table class="btn-table">
+      <tr>
+        <td><span class="btn-pill">👥 Import Teams</span></td>
+        <td>Imports a two-column CSV (<code>id,name</code>, e.g. <code>T1,Finance</code>).
+            Rebuilds the team legend automatically. Replaces any existing teams.</td>
+      </tr>
+      <tr>
+        <td><span class="btn-pill">📂 Import</span></td>
+        <td>Imports a previously exported desk-plan CSV, restoring both desk assignments
+            and team names across all days.</td>
+      </tr>
+      <tr>
+        <td><span class="btn-pill">⬇ Export</span></td>
+        <td>Exports the current desk plan to CSV (desk, mon…fri, plus team names).
+            You will be prompted for a file name.</td>
+      </tr>
+      <tr>
+        <td><span class="btn-pill">📸 Export Image</span></td>
+        <td>Saves the current floor plan — including team colours and an allocation
+            summary — as a PNG image.</td>
+      </tr>
+    </table>
+
+    <p class="group-label">Edit</p>
+    <table class="btn-table">
+      <tr>
+        <td><span class="btn-pill">📋 Copy Day</span></td>
+        <td>Copies all desk assignments from the current day to one or more other days
+            (selected via checkboxes in the pop-up).</td>
+      </tr>
+      <tr>
+        <td><span class="btn-pill">↩ Undo</span></td>
+        <td>Reverts the last desk-assignment change. Supports up to 50 undo steps.</td>
+      </tr>
+      <tr>
+        <td><span class="btn-pill">🧽 Clear Desks</span></td>
+        <td>If desks are selected, clears only those desks for the current day.
+            If nothing is selected, clears all desks for the current day.</td>
+      </tr>
+      <tr>
+        <td><span class="btn-pill">🧹 Clear All</span></td>
+        <td>Clears all desk assignments <em>and</em> removes all teams, without reloading
+            the page. Saved state is also cleared.</td>
+      </tr>
+      <tr>
+        <td><span class="btn-pill">🗑 Reset</span></td>
+        <td>Completely resets the application and reloads the page. All data is lost.</td>
+      </tr>
+    </table>
+
+    <p class="group-label">Select &amp; Teams</p>
+    <table class="btn-table">
+      <tr>
+        <td><span class="btn-pill">🧩 Multi</span></td>
+        <td>Toggles multi-select mode. When <strong>ON</strong> (green), clicking desks
+            adds them to the selection without needing to hold <kbd>Ctrl</kbd>.</td>
+      </tr>
+      <tr>
+        <td><span class="btn-pill">➕ Add Team</span></td>
+        <td>Adds a new team manually. You will be prompted for a name. The system
+            assigns the next available ID (T1, T2 … T<em>n</em>).</td>
+      </tr>
+      <tr>
+        <td><span class="btn-pill">❓ Help</span></td>
+        <td>Opens this guide in a new tab.</td>
+      </tr>
+    </table>
+
+    <hr>
+
+    <h2>Teams</h2>
+    <ul>
+      <li>Import teams from a CSV file with columns <code>id</code> and <code>name</code>.</li>
+      <li>Or add teams one at a time with the <strong>Add Team</strong> button.</li>
+      <li>Click a team chip in the legend to assign selected desks to that team.</li>
+      <li>Each team is automatically given a unique colour.</li>
+    </ul>
+
+    <div class="tip">
+      <strong>CSV format for teams:</strong><br>
+      <code>id,name</code><br>
+      <code>T1,Finance</code><br>
+      <code>T2,Engineering</code>
+    </div>
+
+    <hr>
+
+    <h2>Desk Allocation Summary</h2>
+    <p>The summary panel (below the Teams legend) shows:</p>
+    <ul>
+      <li>Total desks on the floor</li>
+      <li>How many are assigned vs free for the selected day</li>
+      <li>A per-team desk count</li>
+    </ul>
+
+    <hr>
+
+    <h2>Compare Mode</h2>
+    <p>
+      Switch the <strong>Mode</strong> dropdown to <strong>Compare</strong> to view
+      two days side-by-side. Editing is disabled in this mode — switch back to
+      <strong>Single</strong> to make changes.
+    </p>
+
+    <hr>
+
+    <h2>Tips &amp; Best Practices</h2>
+    <ul>
+      <li>Export your plan regularly — it saves your work as a portable CSV.</li>
+      <li>Use consistent team IDs (T1, T2 …) if you manage multiple floors.</li>
+      <li>Use <strong>Copy Day</strong> to quickly roll Monday's plan forward for the week, then tweak individual days.</li>
+      <li>The exported CSV can be re-imported at any time to restore a previous state.</li>
+    </ul>
+
+  </div>
+
+</body>
+</html>
