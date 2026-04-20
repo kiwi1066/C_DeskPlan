@@ -5,31 +5,29 @@
  */
 
 import { AppState, DAYS } from "./state.js";
-import { loadSVG }  from "./io.js";
+import { loadSVG }        from "./io.js";
 import { renderContainer } from "./render.js";
 
 let compareLoaded = false;
+let _currentPlan  = null;   // SVG filename in use when compare loaded
 
 /**
- * Activates compare mode: shows the compare layout, hides single layout,
- * loads both SVG instances if not already loaded.
+ * Activates compare mode. svgFile is the current floor's plan filename.
+ * @param {string} svgFile  e.g. "1WS_L11_deskPlan.svg"
  */
-export function activateCompare() {
-  const mapSingle  = document.getElementById("mapSingle");
-  const compareWrap = document.getElementById("compareWrap");
-  const editControls = document.getElementById("editControls");
-  const compareControls = document.getElementById("compareControls");
+export function activateCompare(svgFile) {
+  document.getElementById("mapSingle").style.display       = "none";
+  document.getElementById("compareWrap").style.display     = "flex";
+  document.getElementById("editControls").style.display    = "none";
+  document.getElementById("compareControls").style.display = "inline-flex";
 
-  if (mapSingle)     mapSingle.style.display     = "none";
-  if (compareWrap)   compareWrap.style.display    = "flex";
-  if (editControls)  editControls.style.display   = "none";
-  if (compareControls) compareControls.style.display = "inline-flex";
-
-  if (!compareLoaded) {
-    loadSVG("svgContainer1", () => {
+  // Reload compare SVGs if floor has changed since last time
+  if (!compareLoaded || _currentPlan !== svgFile) {
+    _currentPlan = svgFile;
+    loadSVG("svgContainer1", svgFile, () => {
       renderContainer("svgContainer1", AppState.currentDay);
     });
-    loadSVG("svgContainer2", () => {
+    loadSVG("svgContainer2", svgFile, () => {
       renderContainer("svgContainer2", AppState.currentDay2);
       compareLoaded = true;
       updateCompareLabels();
@@ -39,25 +37,19 @@ export function activateCompare() {
   }
 }
 
-/**
- * Deactivates compare mode: returns to single view.
- */
-export function deactivateCompare() {
-  const mapSingle   = document.getElementById("mapSingle");
-  const compareWrap = document.getElementById("compareWrap");
-  const editControls = document.getElementById("editControls");
-  const compareControls = document.getElementById("compareControls");
-
-  if (mapSingle)     mapSingle.style.display      = "block";
-  if (compareWrap)   compareWrap.style.display     = "none";
-  if (editControls)  editControls.style.display    = "block";
-  if (compareControls) compareControls.style.display = "none";
+/** Reset compare state — call when switching floors */
+export function resetCompare() {
+  compareLoaded = false;
+  _currentPlan  = null;
 }
 
-/**
- * Re-renders both compare containers with their current day selections,
- * and updates the panel day labels.
- */
+export function deactivateCompare() {
+  document.getElementById("mapSingle").style.display       = "block";
+  document.getElementById("compareWrap").style.display     = "none";
+  document.getElementById("editControls").style.display    = "block";
+  document.getElementById("compareControls").style.display = "none";
+}
+
 export function refreshCompare() {
   renderContainer("svgContainer1", AppState.currentDay);
   renderContainer("svgContainer2", AppState.currentDay2);
@@ -67,6 +59,6 @@ export function refreshCompare() {
 function updateCompareLabels() {
   const label1 = document.getElementById("compareLabel1");
   const label2 = document.getElementById("compareLabel2");
-  if (label1) label1.textContent = DAYS.find(d => d.key === AppState.currentDay)?.label || AppState.currentDay;
+  if (label1) label1.textContent = DAYS.find(d => d.key === AppState.currentDay)?.label  || AppState.currentDay;
   if (label2) label2.textContent = DAYS.find(d => d.key === AppState.currentDay2)?.label || AppState.currentDay2;
 }

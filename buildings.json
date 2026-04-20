@@ -1,0 +1,24 @@
+{
+  "1WS": {
+    "label": "1 Williams St",
+    "floors": [
+      {
+        "id":    "L11",
+        "label": "Level 11",
+        "plan":  "1WS_L11_deskPlan.svg"
+      }
+    ]
+  },
+  "275G": {
+    "label": "275 George St",
+    "floors": []
+  },
+  "400G": {
+    "label": "400 George St",
+    "floors": []
+  },
+  "140C": {
+    "label": "140 Creek St",
+    "floors": []
+  }
+}

@@ -15,6 +15,10 @@ export const DAYS = [
 
 const STORAGE_KEY = "deskPlannerData";
 
+// Override this with a per-floor key once buildings are loaded
+let _storageKey = STORAGE_KEY;
+export function setStorageKey(key) { _storageKey = key; }
+
 export const AppState = {
   deskData:      {},   // { "desk-001": { mon:"T1", tue:"", ... }, ... }
   teamNames:     {},   // { "T1": "Finance", "T2": "HR", ... }
@@ -172,7 +176,7 @@ export function undo() {
 
 export function saveState() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    localStorage.setItem(_storageKey, JSON.stringify({
       deskData:  AppState.deskData,
       teamNames: AppState.teamNames,
     }));
@@ -183,7 +187,7 @@ export function saveState() {
 
 export function loadState() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(_storageKey);
     if (!raw) return;
     const saved = JSON.parse(raw);
 
@@ -191,8 +195,6 @@ export function loadState() {
     const savedTeams = saved.teamNames || {};
 
     // Merge saved assignments into already-registered desks.
-    // Never replace AppState.deskData outright — desks registered from the SVG
-    // must remain in the object even if they weren't in a previous save.
     Object.keys(savedDesks).forEach(id => {
       if (AppState.deskData[id]) {
         AppState.deskData[id] = savedDesks[id];
@@ -206,7 +208,7 @@ export function loadState() {
 }
 
 export function resetAll() {
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(_storageKey);
   location.reload();
 }
 
@@ -218,6 +220,16 @@ export function clearAllData() {
   AppState.selectedDesks = [];
   AppState.history       = [];
   saveState();
+}
+
+/** Called when switching floors — wipes all runtime state ready for new SVG */
+export function resetFloorData() {
+  AppState.deskData      = {};
+  AppState.teamNames     = {};
+  AppState.selectedDesks = [];
+  AppState.history       = [];
+  AppState.mode          = "single";
+  AppState.currentDay    = "mon";
 }
 
 // ── Summary helpers ───────────────────────────────────────────────────────────

@@ -464,6 +464,50 @@ body.drag-selecting * {
   cursor: crosshair !important;
   user-select: none;
 }
+
+/* ── Location row (Building / Floor) ─────────────────────────── */
+#locationRow {
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+  border-bottom: 2px solid var(--brand-light);
+}
+
+/* ── Floor loading overlay ───────────────────────────────────── */
+.floor-loading {
+  position: fixed;
+  inset: 0;
+  background: rgba(240, 243, 247, 0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.floor-loading-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  padding: 28px 36px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.floor-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--brand-mid);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #c0c8d4; border-radius: 3px; }

@@ -19,12 +19,13 @@ import { render } from "./render.js";
 // ── SVG loader ────────────────────────────────────────────────────────────────
 
 /**
- * Fetches deskPlan.svg and injects it into a container element.
+ * Fetches an SVG file and injects it into a container element.
  * @param {string}   containerId  - target div id
+ * @param {string}   svgFile      - filename e.g. "1WS_L11_deskPlan.svg"
  * @param {Function} [callback]   - called after inject
  */
-export function loadSVG(containerId, callback) {
-  fetch("deskPlan.svg")
+export function loadSVG(containerId, svgFile, callback) {
+  fetch(svgFile)
     .then(r => r.text())
     .then(svg => {
       const el = document.getElementById(containerId);
@@ -34,7 +35,7 @@ export function loadSVG(containerId, callback) {
       if (svgEl) svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
       if (callback) callback();
     })
-    .catch(err => console.error("Failed to load SVG:", err));
+    .catch(err => console.error(`Failed to load SVG (${svgFile}):`, err));
 }
 
 // ── CSV — Desk data export ────────────────────────────────────────────────────
@@ -122,11 +123,19 @@ export function handleTeamImport(file) {
 
 // ── Image export ──────────────────────────────────────────────────────────────
 
-export function exportImage() {
+/**
+ * @param {string} planFile   - PNG filename e.g. from getCurrentFloor().plan (svg, we derive png)
+ * @param {string} titleText  - e.g. "1 Williams St — Level 11"
+ */
+export function exportImage(planFile, titleText) {
+  // Derive PNG name: strip svg extension, add .png
+  // Convention: the PNG shares the same base name as the SVG
+  const pngFile = planFile ? planFile.replace(/\.svg$/i, ".png") : "floorPlan.png";
+
   const canvas = document.createElement("canvas");
   const ctx    = canvas.getContext("2d");
   const img    = new Image();
-  img.src = "floorPlan.png";
+  img.src = pngFile;
 
   img.onload = () => {
     const { width, height } = img;
@@ -146,7 +155,7 @@ export function exportImage() {
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
 
-    const floorLabel = document.title || "Desk Planner";
+    const floorLabel = titleText || document.title || "Desk Planner";
     const dayLabel   = DAYS.find(d => d.key === AppState.currentDay)?.label || "";
 
     ctx.font = "bold 26px Segoe UI";

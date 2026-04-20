@@ -3,16 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Level 11 — Desk Planner</title>
+  <title>Desk Planner</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <header class="app-header">
-    <h1>Level 11 — Desk Planner</h1>
+    <h1 id="appTitle">Desk Planner</h1>
   </header>
 
   <div id="controls">
+
+    <!-- Location row: Building + Floor -->
+    <div class="view-row" id="locationRow">
+      <div class="field-group">
+        <span class="field-label">Building</span>
+        <select id="building"></select>
+      </div>
+      <div class="field-group">
+        <span class="field-label">Floor</span>
+        <select id="floor"></select>
+      </div>
+    </div>
+
+    <!-- View row: Mode + Day -->
     <div class="view-row">
       <div class="field-group">
         <span class="field-label">Mode</span>
@@ -64,6 +78,7 @@
     </div>
   </div>
 
+  <!-- Copy modal -->
   <div id="copyModal" role="dialog" aria-modal="true">
     <h3>Copy Day To…</h3>
     <div id="copyDays"></div>
@@ -75,8 +90,6 @@
 
   <!-- Team edit modal -->
   <div id="teamEditModal" role="dialog" aria-modal="true">
-
-    <!-- Panel 1: Edit name -->
     <div id="teamEditPanel">
       <div class="team-edit-header">
         <span class="team-edit-dot" id="teamEditDot"></span>
@@ -92,8 +105,6 @@
         <button id="btn-team-edit-cancel" class="btn-secondary">Cancel</button>
       </div>
     </div>
-
-    <!-- Panel 2: Confirm delete (hidden until needed) -->
     <div id="teamDeletePanel" style="display:none">
       <div class="team-edit-header">
         <span class="team-edit-dot" id="teamDeleteDot"></span>
@@ -106,26 +117,34 @@
         <button id="btn-dc-cancel" class="btn-secondary">Cancel</button>
       </div>
     </div>
-
   </div>
 
+  <!-- Floor plan loading overlay -->
+  <div id="floorLoading" class="floor-loading" style="display:none">
+    <div class="floor-loading-inner">
+      <div class="floor-loading-spinner"></div>
+      <span id="floorLoadingLabel">Loading floor plan…</span>
+    </div>
+  </div>
+
+  <!-- Map area -->
   <div class="map-area">
     <div id="mapSingle" class="mapBox">
-      <img src="floorPlan.png" alt="Office floor plan">
+      <img id="floorPlanImg" src="" alt="Office floor plan">
       <div id="svgContainer" class="svgLayer"></div>
     </div>
     <div id="compareWrap">
       <div class="compare-panel">
         <div class="compare-label" id="compareLabel1"></div>
         <div class="mapBox">
-          <img src="floorPlan.png" alt="Floor plan day 1">
+          <img id="floorPlanImg1" src="" alt="Floor plan day 1">
           <div id="svgContainer1" class="svgLayer"></div>
         </div>
       </div>
       <div class="compare-panel">
         <div class="compare-label" id="compareLabel2"></div>
         <div class="mapBox">
-          <img src="floorPlan.png" alt="Floor plan day 2">
+          <img id="floorPlanImg2" src="" alt="Floor plan day 2">
           <div id="svgContainer2" class="svgLayer"></div>
         </div>
       </div>
