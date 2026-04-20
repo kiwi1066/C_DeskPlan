@@ -3,19 +3,36 @@
     "label": "1 Williams St",
     "floors": [
       {
-        "id":    "L11",
-        "label": "Level 11",
-        "plan":  "1WS_L11_deskPlan.svg"
+        "id":    "L7",
+        "label": "Level 7",
+        "plan":  "1WS_L7_deskPlan.svg"
       }
     ]
   },
   "275G": {
     "label": "275 George St",
-    "floors": []
+    "floors": [ 
+      {
+        "id":    "L11",
+        "label": "Level 11",
+        "plan":  "275G_L11_deskPlan.svg"
+      }
+    ]
   },
   "400G": {
     "label": "400 George St",
-    "floors": []
+    "floors": [
+      {
+        "id":    "L5",
+        "label": "Level 7",
+        "plan":  "400G_L5_deskPlan.svg"
+      }
+      {
+        "id":    "L7",
+        "label": "Level 7",
+        "plan":  "400G_L7_deskPlan.svg"
+      }
+    ]
   },
   "140C": {
     "label": "140 Creek St",
