@@ -49,8 +49,9 @@ export function getCurrentFloor() {
     buildingId:    _buildingId,
     buildingLabel: bldg.label ?? _buildingId,
     floorId:       _floorId,
-    floorLabel:    floor?.label ?? _floorId ?? "",
-    plan:          floor?.plan  ?? null,   // e.g. "1WS_L11_deskPlan.svg"
+    floorLabel:    floor?.label    ?? _floorId ?? "",
+    plan:          floor?.plan     ?? null,
+    deskSelector:  floor?.deskSelector ?? "g[id^='desk']",  // default for existing floors
   };
 }
 

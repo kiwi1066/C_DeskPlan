@@ -28,6 +28,7 @@ export const AppState = {
   currentDay:    "mon",
   currentDay2:   "tue",
   mode:          "single", // "single" | "compare"
+  deskSelector:  "g[id^='desk']",  // updated per floor on load
 };
 
 // ── Desk registration ────────────────────────────────────────────────────────
@@ -230,6 +231,7 @@ export function resetFloorData() {
   AppState.history       = [];
   AppState.mode          = "single";
   AppState.currentDay    = "mon";
+  AppState.deskSelector  = "g[id^='desk']";
 }
 
 // ── Summary helpers ───────────────────────────────────────────────────────────

@@ -18,19 +18,22 @@ import { applyHighlight } from "./render.js";
 
 // ── Module state ──────────────────────────────────────────────────────────────
 
-let dragging   = false;
-let startPt    = null;   // SVG-space point where drag began
-let selRect    = null;   // the <rect> element drawn during drag
-let svgEl      = null;   // the live SVG element
+let dragging      = false;
+let startPt       = null;
+let selRect       = null;
+let svgEl         = null;
+let _deskSelector = "g[id^='desk']";  // updated per floor
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
  * Attach Shift+drag selection to an SVG element.
  * @param {SVGSVGElement} svg
+ * @param {string} [deskSelector]  CSS selector for desk groups
  */
-export function initDragSelect(svg) {
-  svgEl = svg;
+export function initDragSelect(svg, deskSelector) {
+  svgEl         = svg;
+  _deskSelector = deskSelector || "g[id^='desk']";
 
   svg.addEventListener("mousedown", onMouseDown);
   window.addEventListener("mousemove", onMouseMove);
@@ -120,7 +123,7 @@ function onMouseUp(e) {
   };
 
   // Hit-test every desk
-  svgEl.querySelectorAll("g[id^='desk']").forEach(deskEl => {
+  svgEl.querySelectorAll(_deskSelector).forEach(deskEl => {
     const shape = deskEl.querySelector("rect,polygon,path");
     if (!shape) return;
 
