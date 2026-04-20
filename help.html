@@ -14,6 +14,9 @@
       --surface:     #ffffff;
       --border:      #dde3ea;
       --text:        #1a2535;
+      --text-muted:  #6b7a8d;
+      --accent:      #28a745;
+      --danger:      #dc3545;
       --radius:      10px;
     }
 
@@ -25,46 +28,104 @@
       background: var(--bg);
       color: var(--text);
       font-size: 14px;
-      line-height: 1.65;
+      line-height: 1.7;
     }
 
     .app-header {
       background: linear-gradient(90deg, var(--brand-dark), var(--brand-mid));
       color: #fff;
-      padding: 14px 24px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+    .app-header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+    .app-header .version { font-size: 12px; opacity: 0.7; }
+
+    .page {
+      display: flex;
+      max-width: 1000px;
+      margin: 24px auto;
+      gap: 24px;
+      padding: 0 16px;
+      align-items: flex-start;
     }
 
-    .app-header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+    /* Sidebar */
+    .sidebar { width: 180px; flex-shrink: 0; position: sticky; top: 20px; }
+    .sidebar nav {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 0;
+    }
+    .sidebar nav a {
+      display: block;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .sidebar nav a:hover { color: var(--brand-dark); border-left-color: var(--brand-mid); }
+    .sidebar nav .nav-section {
+      padding: 10px 16px 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #aab;
+    }
 
+    /* Main */
     .container {
-      max-width: 860px;
-      margin: 20px auto;
+      flex: 1;
+      min-width: 0;
       background: var(--surface);
       padding: 28px 32px;
       border-radius: var(--radius);
       border: 1px solid var(--border);
     }
 
-    h2 { color: var(--brand-dark); margin-top: 30px; font-size: 16px; }
-    h3 { font-size: 14px; margin: 18px 0 6px; }
+    h2 {
+      color: var(--brand-dark);
+      margin: 36px 0 10px;
+      font-size: 17px;
+      padding-top: 10px;
+      border-top: 2px solid var(--brand-light);
+    }
+    h2:first-child { margin-top: 0; border-top: none; }
+    p  { margin: 0 0 10px; }
+    ul, ol { padding-left: 20px; margin: 0 0 10px; }
+    li { margin-bottom: 5px; }
 
-    p, li { line-height: 1.65; }
+    code {
+      background: #f0f3f7;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: "Consolas", "Courier New", monospace;
+    }
+    kbd {
+      background: #e8edf2;
+      border: 1px solid #c8d0da;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12px;
+      box-shadow: 0 1px 0 #b0bac6;
+    }
 
-    ul { padding-left: 20px; }
-    ul li { margin-bottom: 4px; }
-
-    hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
-
-    .tip {
-      background: var(--brand-light);
-      border-left: 4px solid var(--brand-mid);
+    .tip, .note {
       padding: 10px 14px;
       border-radius: 0 6px 6px 0;
       margin: 14px 0;
       font-size: 13px;
+      line-height: 1.6;
     }
+    .tip  { background: var(--brand-light); border-left: 4px solid var(--brand-mid); }
+    .note { background: #fff8ec;            border-left: 4px solid #f0a500; }
 
-    /* Simulated toolbar pill to match app buttons */
     .btn-pill {
       display: inline-flex;
       align-items: center;
@@ -78,179 +139,340 @@
       vertical-align: middle;
       white-space: nowrap;
     }
+    .btn-pill.danger  { background: var(--danger); }
+    .btn-pill.success { background: var(--accent); }
 
-    /* Button group tables */
-    .btn-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-    .btn-table tr + tr td { border-top: 1px solid var(--border); }
-    .btn-table td { padding: 8px 6px; vertical-align: top; }
-    .btn-table td:first-child { width: 160px; white-space: nowrap; }
+    .ref-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 4px;
+      font-size: 13px;
+    }
+    .ref-table tr + tr td { border-top: 1px solid var(--border); }
+    .ref-table td { padding: 9px 8px; vertical-align: top; }
+    .ref-table td:first-child { width: 175px; white-space: nowrap; }
 
     .group-label {
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.07em;
-      color: #6b7a8d;
-      margin: 22px 0 6px;
+      color: var(--text-muted);
+      margin: 24px 0 6px;
     }
 
-    @media (max-width: 600px) {
-      .container { padding: 18px 16px; margin: 12px; }
+    .key-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    .key-table tr + tr td { border-top: 1px solid var(--border); }
+    .key-table td { padding: 9px 8px; vertical-align: middle; }
+    .key-table td:first-child { width: 230px; white-space: nowrap; }
+
+    .csv-block {
+      background: #f6f8fa;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.9;
+      margin: 10px 0;
+    }
+
+    /* Numbered workflow steps */
+    .steps ol { padding-left: 0; list-style: none; counter-reset: steps; }
+    .steps li {
+      counter-increment: steps;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .steps li::before {
+      content: counter(steps);
+      background: var(--brand-dark);
+      color: #fff;
+      border-radius: 50%;
+      min-width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    @media (max-width: 680px) {
+      .page { flex-direction: column; padding: 0 10px; }
+      .sidebar { width: 100%; position: static; }
+      .container { padding: 18px 16px; }
     }
   </style>
 </head>
 <body>
 
-  <header class="app-header">
-    <h1>Desk Planner — User Guide</h1>
-  </header>
+<header class="app-header">
+  <h1>Desk Planner — User Guide</h1>
+  <span class="version">Level 11</span>
+</header>
 
-  <div class="container">
+<div class="page">
 
-    <h2>Overview</h2>
+  <aside class="sidebar">
+    <nav>
+      <div class="nav-section">Getting Started</div>
+      <a href="#overview">Overview</a>
+      <a href="#workflow">Basic Workflow</a>
+
+      <div class="nav-section">Selecting Desks</div>
+      <a href="#selecting">Click &amp; Multi</a>
+      <a href="#drag-select">Shift+Drag</a>
+
+      <div class="nav-section">Teams</div>
+      <a href="#teams">Managing Teams</a>
+      <a href="#assigning">Assigning Desks</a>
+
+      <div class="nav-section">Reference</div>
+      <a href="#toolbar">Toolbar</a>
+      <a href="#compare">Compare Mode</a>
+      <a href="#summary">Summary Panel</a>
+      <a href="#shortcuts">Keyboard Shortcuts</a>
+
+      <div class="nav-section">Data</div>
+      <a href="#import-export">Import &amp; Export</a>
+      <a href="#tips">Tips</a>
+    </nav>
+  </aside>
+
+  <main class="container">
+
+    <h2 id="overview">Overview</h2>
     <p>
       The Desk Planner lets you visually assign desks to teams across the working week
-      using an interactive floor plan. Import teams, allocate desks by day, and export
-      your plan as a CSV or image for sharing and archiving.
+      using an interactive floor plan. Add teams, allocate desks by day, compare days
+      side-by-side, and export your plan as a CSV or image.
+    </p>
+    <p>
+      Your work is automatically saved to the browser after every change —
+      you can close and reopen the tab without losing data. Use
+      <span class="btn-pill">&#8595; Export</span> to create a portable backup file.
     </p>
 
-    <hr>
-
-    <h2>Basic Workflow</h2>
-    <ol>
-      <li>Select a <strong>Day</strong> from the day dropdown.</li>
-      <li>Add teams — either via <strong>Import Teams</strong> (CSV) or the <strong>Add Team</strong> button.</li>
-      <li>Click one or more desks on the floor plan to select them.
-          Use <strong>Multi</strong> mode or hold <kbd>Ctrl</kbd> to select multiple desks at once.</li>
-      <li>Click a <strong>team chip</strong> in the Teams legend — the selected desks are assigned to that team.</li>
-      <li>Repeat for each day. Use <strong>Copy Day</strong> to duplicate Monday's plan across the week.</li>
-    </ol>
-
+    <h2 id="workflow">Basic Workflow</h2>
+    <div class="steps">
+      <ol>
+        <li>Choose a <strong>Day</strong> from the day dropdown.</li>
+        <li>Add teams via <span class="btn-pill">&#128101; Import Teams</span> (CSV) or <span class="btn-pill">&#10133; Add Team</span>.</li>
+        <li>Select one or more desks on the floor plan.</li>
+        <li>Click a team chip in the legend to assign the selected desks.</li>
+        <li>Repeat for each day, or use <span class="btn-pill">&#128203; Copy Day</span> to duplicate a day across the week.</li>
+      </ol>
+    </div>
     <div class="tip">
-      <strong>Tip:</strong> Desk colours match the team legend. Hover over a coloured desk
-      to see the team name as a tooltip.
+      <strong>Tip:</strong> Hover over any coloured desk to see a tooltip with the team name.
     </div>
 
-    <hr>
+    <h2 id="selecting">Selecting Desks</h2>
+    <p>Three ways to build a selection:</p>
+    <ul>
+      <li><strong>Single click</strong> — selects one desk and clears any previous selection.</li>
+      <li><kbd>Ctrl</kbd><strong>+click</strong> (or <kbd>Cmd</kbd>+click on Mac) — adds or removes a desk without clearing others.</li>
+      <li><span class="btn-pill success">&#129329; Multi ON</span> — when active, every click adds to the selection automatically, no need to hold <kbd>Ctrl</kbd>.</li>
+    </ul>
+    <p>Clicking an empty area of the floor plan clears the selection.</p>
 
-    <h2>Toolbar Reference</h2>
+    <h2 id="drag-select">Shift+Drag Area Select</h2>
+    <p>
+      Hold <kbd>Shift</kbd> and drag across the floor plan to draw a selection rectangle.
+      All desks whose area overlaps the rectangle are added to the selection on release.
+    </p>
+    <ul>
+      <li>The cursor changes to a <strong>crosshair</strong> when <kbd>Shift</kbd> is held, signalling that drag-select is ready.</li>
+      <li>Drag-select is always <strong>additive</strong> — existing selected desks are kept, so you can draw multiple regions.</li>
+      <li>Accidental micro-drags (under 6px) are ignored and treated as a normal click.</li>
+      <li>Drag-select is disabled in Compare mode.</li>
+    </ul>
+    <div class="tip">
+      <strong>Workflow:</strong> Use <kbd>Shift</kbd>+drag to select a zone roughly, then
+      <kbd>Ctrl</kbd>+click to fine-tune individual desks.
+    </div>
+
+    <h2 id="teams">Managing Teams</h2>
+    <p><strong>Adding teams</strong></p>
+    <ul>
+      <li><span class="btn-pill">&#10133; Add Team</span> — creates one team at a time. Enter a display name when prompted. The ID (T1, T2&hellip;) is assigned automatically.</li>
+      <li><span class="btn-pill">&#128101; Import Teams</span> — bulk-imports from a CSV file (see <a href="#import-export">Import &amp; Export</a>).</li>
+    </ul>
+
+    <p><strong>Renaming a team</strong></p>
+    <p>
+      Hover over any team chip in the legend — a <strong>&#9999;&#65039;</strong> edit button
+      appears on the right edge. Click it to open the team editor. Edit the name and
+      press <strong>Save</strong> or <kbd>Enter</kbd>. Press <kbd>Escape</kbd> to cancel.
+    </p>
+    <div class="note">
+      The team's <strong>ID</strong> (e.g. T1) never changes — only the display name is updated.
+    </div>
+
+    <p><strong>Deleting a team</strong></p>
+    <p>
+      Open the team editor (&#9999;&#65039;) and click <span class="btn-pill danger">Delete</span>.
+      If the team has existing desk assignments you will be offered two options:
+    </p>
+    <ul>
+      <li><strong>Delete &amp; Unassign</strong> — removes the team and clears all its desk colours across every day.</li>
+      <li><strong>Delete, Keep Colours</strong> — removes the team from the legend but leaves desk colours in place, useful for gradual reassignment.</li>
+    </ul>
+
+    <h2 id="assigning">Assigning Desks to a Team</h2>
+    <ol>
+      <li>Select one or more desks using any selection method.</li>
+      <li>Click the team's coloured chip label in the <strong>Teams</strong> legend.<br>
+          <span style="color:var(--text-muted);font-size:12px;">(Click the label, not the &#9999;&#65039; edit button.)</span></li>
+      <li>Desk colours update instantly and the summary refreshes.</li>
+    </ol>
+    <p>To unassign, select the desks and use <span class="btn-pill">&#129535; Clear Desks</span>.</p>
+
+    <h2 id="toolbar">Toolbar Reference</h2>
 
     <p class="group-label">File</p>
-    <table class="btn-table">
+    <table class="ref-table">
       <tr>
-        <td><span class="btn-pill">👥 Import Teams</span></td>
-        <td>Imports a two-column CSV (<code>id,name</code>, e.g. <code>T1,Finance</code>).
-            Rebuilds the team legend automatically. Replaces any existing teams.</td>
+        <td><span class="btn-pill">&#128101; Import Teams</span></td>
+        <td>Imports a two-column CSV (<code>id,name</code>). Replaces any existing teams.</td>
       </tr>
       <tr>
-        <td><span class="btn-pill">📂 Import</span></td>
-        <td>Imports a previously exported desk-plan CSV, restoring both desk assignments
-            and team names across all days.</td>
+        <td><span class="btn-pill">&#128194; Import</span></td>
+        <td>Restores a previously exported desk-plan CSV, including assignments and team names across all days.</td>
       </tr>
       <tr>
-        <td><span class="btn-pill">⬇ Export</span></td>
-        <td>Exports the current desk plan to CSV (desk, mon…fri, plus team names).
-            You will be prompted for a file name.</td>
+        <td><span class="btn-pill">&#8595; Export</span></td>
+        <td>Exports the full desk plan to CSV. You will be prompted for a file name.</td>
       </tr>
       <tr>
-        <td><span class="btn-pill">📸 Export Image</span></td>
-        <td>Saves the current floor plan — including team colours and an allocation
-            summary — as a PNG image.</td>
+        <td><span class="btn-pill">&#128248; Export Image</span></td>
+        <td>Saves the current day's floor plan as a PNG with team colours and an allocation summary.</td>
       </tr>
     </table>
 
     <p class="group-label">Edit</p>
-    <table class="btn-table">
+    <table class="ref-table">
       <tr>
-        <td><span class="btn-pill">📋 Copy Day</span></td>
-        <td>Copies all desk assignments from the current day to one or more other days
-            (selected via checkboxes in the pop-up).</td>
+        <td><span class="btn-pill">&#128203; Copy Day</span></td>
+        <td>Copies all desk assignments from the current day to one or more other days selected via checkboxes.</td>
       </tr>
       <tr>
-        <td><span class="btn-pill">↩ Undo</span></td>
-        <td>Reverts the last desk-assignment change. Supports up to 50 undo steps.</td>
+        <td><span class="btn-pill">&#8617; Undo</span></td>
+        <td>Reverts the last desk-assignment change. Supports up to 50 undo steps per session.</td>
       </tr>
       <tr>
-        <td><span class="btn-pill">🧽 Clear Desks</span></td>
-        <td>If desks are selected, clears only those desks for the current day.
-            If nothing is selected, clears all desks for the current day.</td>
+        <td><span class="btn-pill">&#129535; Clear Desks</span></td>
+        <td>Clears selected desks for the current day. If nothing is selected, clears the entire day.</td>
       </tr>
       <tr>
-        <td><span class="btn-pill">🧹 Clear All</span></td>
-        <td>Clears all desk assignments <em>and</em> removes all teams, without reloading
-            the page. Saved state is also cleared.</td>
+        <td><span class="btn-pill">&#129529; Clear All</span></td>
+        <td>Clears all desk assignments and removes all teams without reloading the page.</td>
       </tr>
       <tr>
-        <td><span class="btn-pill">🗑 Reset</span></td>
-        <td>Completely resets the application and reloads the page. All data is lost.</td>
+        <td><span class="btn-pill danger">&#128465; Reset</span></td>
+        <td>Completely resets the application and reloads the page. All data is permanently lost.</td>
       </tr>
     </table>
 
     <p class="group-label">Select &amp; Teams</p>
-    <table class="btn-table">
+    <table class="ref-table">
       <tr>
-        <td><span class="btn-pill">🧩 Multi</span></td>
-        <td>Toggles multi-select mode. When <strong>ON</strong> (green), clicking desks
-            adds them to the selection without needing to hold <kbd>Ctrl</kbd>.</td>
+        <td><span class="btn-pill">&#129329; Multi</span></td>
+        <td>Toggles multi-select. When <span class="btn-pill success">&#129329; Multi ON</span>, every desk click adds to the selection without holding <kbd>Ctrl</kbd>.</td>
       </tr>
       <tr>
-        <td><span class="btn-pill">➕ Add Team</span></td>
-        <td>Adds a new team manually. You will be prompted for a name. The system
-            assigns the next available ID (T1, T2 … T<em>n</em>).</td>
+        <td><span class="btn-pill">&#10133; Add Team</span></td>
+        <td>Creates a new team. Enter a display name — the ID is auto-assigned.</td>
       </tr>
       <tr>
-        <td><span class="btn-pill">❓ Help</span></td>
+        <td><span class="btn-pill">&#10067; Help</span></td>
         <td>Opens this guide in a new tab.</td>
       </tr>
     </table>
 
-    <hr>
-
-    <h2>Teams</h2>
+    <h2 id="compare">Compare Mode</h2>
+    <p>
+      Switch the <strong>Mode</strong> dropdown to <strong>Compare</strong> to view two days
+      side-by-side on the same floor plan. Choose which days to compare using the two
+      day selectors that appear.
+    </p>
     <ul>
-      <li>Import teams from a CSV file with columns <code>id</code> and <code>name</code>.</li>
-      <li>Or add teams one at a time with the <strong>Add Team</strong> button.</li>
-      <li>Click a team chip in the legend to assign selected desks to that team.</li>
-      <li>Each team is automatically given a unique colour.</li>
+      <li>Desk editing and drag-select are disabled in Compare mode.</li>
+      <li>Switch back to <strong>Single</strong> to resume editing.</li>
     </ul>
+
+    <h2 id="summary">Desk Allocation Summary</h2>
+    <p>The panel below the Teams legend updates in real time and shows:</p>
+    <ul>
+      <li><strong>Total</strong> — total desks on the floor.</li>
+      <li><strong>Assigned</strong> — desks with a team for the current day.</li>
+      <li><strong>Free</strong> — desks with no assignment.</li>
+      <li>A colour-coded count badge per team.</li>
+    </ul>
+
+    <h2 id="shortcuts">Keyboard Shortcuts</h2>
+    <table class="key-table">
+      <tr>
+        <td><kbd>Shift</kbd> + drag</td>
+        <td>Draw a rubber-band rectangle to select multiple desks at once.</td>
+      </tr>
+      <tr>
+        <td><kbd>Ctrl</kbd> + click &nbsp;<span style="color:#aab;font-size:12px;">(<kbd>Cmd</kbd> on Mac)</span></td>
+        <td>Add or remove a single desk from the current selection.</td>
+      </tr>
+      <tr>
+        <td><kbd>Enter</kbd> &nbsp;<span style="color:#aab;font-size:12px;">in team editor</span></td>
+        <td>Save the team rename.</td>
+      </tr>
+      <tr>
+        <td><kbd>Escape</kbd> &nbsp;<span style="color:#aab;font-size:12px;">in team editor</span></td>
+        <td>Close the team editor without saving.</td>
+      </tr>
+    </table>
+
+    <h2 id="import-export">Import &amp; Export</h2>
+
+    <p><strong>Teams CSV format</strong></p>
+    <p>Two columns with a header row. The ID must be <code>T</code> followed by a number.</p>
+    <div class="csv-block">id,name<br>T1,Finance<br>T2,Engineering<br>T3,HR</div>
+
+    <p><strong>Desk plan CSV format</strong></p>
+    <p>
+      Generated by <span class="btn-pill">&#8595; Export</span>. One row per desk with team IDs
+      for each day, plus team names as additional columns. Re-importable via
+      <span class="btn-pill">&#128194; Import</span>.
+    </p>
+    <div class="csv-block">desk,mon,tue,wed,thu,fri,mon_name,tue_name,wed_name,thu_name,fri_name<br>
+desk-001,T1,T1,T2,,T1,Finance,Finance,Engineering,,Finance<br>
+desk-002,T3,,,T3,,HR,,,HR,</div>
 
     <div class="tip">
-      <strong>CSV format for teams:</strong><br>
-      <code>id,name</code><br>
-      <code>T1,Finance</code><br>
-      <code>T2,Engineering</code>
+      <strong>Tip:</strong> The exported CSV includes team names alongside IDs, making it
+      readable in Excel without needing to open the planner.
     </div>
 
-    <hr>
-
-    <h2>Desk Allocation Summary</h2>
-    <p>The summary panel (below the Teams legend) shows:</p>
+    <h2 id="tips">Tips &amp; Best Practices</h2>
     <ul>
-      <li>Total desks on the floor</li>
-      <li>How many are assigned vs free for the selected day</li>
-      <li>A per-team desk count</li>
+      <li>Use <kbd>Shift</kbd>+drag for large zones, then <kbd>Ctrl</kbd>+click to fine-tune.</li>
+      <li>Use <strong>Copy Day</strong> to roll Monday's plan across the week, then adjust individual days.</li>
+      <li>Use <strong>Compare</strong> mode to review differences between two days before finalising.</li>
+      <li>Keep team IDs consistent across floors — they share the same colour scheme.</li>
+      <li>Use <strong>Delete, Keep Colours</strong> when retiring a team mid-week so the floor plan stays readable while you reassign desks.</li>
+      <li>Export regularly — the browser auto-save is convenient but a CSV backup lets you restore from any device.</li>
     </ul>
 
-    <hr>
-
-    <h2>Compare Mode</h2>
-    <p>
-      Switch the <strong>Mode</strong> dropdown to <strong>Compare</strong> to view
-      two days side-by-side. Editing is disabled in this mode — switch back to
-      <strong>Single</strong> to make changes.
-    </p>
-
-    <hr>
-
-    <h2>Tips &amp; Best Practices</h2>
-    <ul>
-      <li>Export your plan regularly — it saves your work as a portable CSV.</li>
-      <li>Use consistent team IDs (T1, T2 …) if you manage multiple floors.</li>
-      <li>Use <strong>Copy Day</strong> to quickly roll Monday's plan forward for the week, then tweak individual days.</li>
-      <li>The exported CSV can be re-imported at any time to restore a previous state.</li>
-    </ul>
-
-  </div>
+  </main>
+</div>
 
 </body>
 </html>
