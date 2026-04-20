@@ -73,6 +73,23 @@
     </div>
   </div>
 
+  <!-- Team edit modal -->
+  <div id="teamEditModal" role="dialog" aria-modal="true" aria-labelledby="teamEditTitle">
+    <div class="team-edit-header">
+      <span class="team-edit-dot" id="teamEditDot"></span>
+      <h3 id="teamEditTitle">Edit Team</h3>
+    </div>
+    <div class="team-edit-body">
+      <label for="teamEditInput">Name</label>
+      <input id="teamEditInput" type="text" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="modal-actions">
+      <button id="btn-team-edit-save">Save</button>
+      <button id="btn-team-edit-delete" class="btn-danger">Delete</button>
+      <button id="btn-team-edit-cancel" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+
   <div class="map-area">
     <div id="mapSingle" class="mapBox">
       <img src="floorPlan.png" alt="Office floor plan">

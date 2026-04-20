@@ -40,6 +40,34 @@ export function addTeam(id, name) {
   AppState.teamNames[id] = name;
 }
 
+export function renameTeam(id, newName) {
+  if (AppState.teamNames[id] !== undefined) AppState.teamNames[id] = newName;
+}
+
+export function deleteTeam(id, unassignDesks = false) {
+  delete AppState.teamNames[id];
+  if (unassignDesks) {
+    DAYS.forEach(({ key }) => {
+      Object.keys(AppState.deskData).forEach(deskId => {
+        if (AppState.deskData[deskId][key] === id) {
+          AppState.deskData[deskId][key] = "";
+        }
+      });
+    });
+  }
+}
+
+/** Total desk-day assignments across all days for a team */
+export function teamDeskCount(teamId) {
+  let count = 0;
+  DAYS.forEach(({ key }) => {
+    Object.values(AppState.deskData).forEach(v => {
+      if (v[key] === teamId) count++;
+    });
+  });
+  return count;
+}
+
 export function removeAllTeams() {
   AppState.teamNames = {};
 }

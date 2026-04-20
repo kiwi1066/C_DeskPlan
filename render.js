@@ -49,9 +49,12 @@ export function renderContainer(containerId, day) {
   });
 }
 
-// Callback set by app.js so render.js never imports state-mutation functions
+// Callbacks set by app.js so render.js never imports state-mutation functions
 let _onTeamClick = null;
+let _onTeamEdit  = null;
+
 export function setTeamClickHandler(fn) { _onTeamClick = fn; }
+export function setTeamEditHandler(fn)  { _onTeamEdit  = fn; }
 
 /** Renders the main (single) view */
 export function render() {
@@ -62,7 +65,7 @@ export function render() {
     renderContainer("svgContainer", AppState.currentDay);
   }
 
-  buildLegend(_onTeamClick);
+  buildLegend(_onTeamClick, _onTeamEdit);
   updateSummary();
   applyHighlight();
 }
@@ -88,9 +91,10 @@ export function applyHighlight() {
 // ── Legend ────────────────────────────────────────────────────────────────────
 
 /**
- * @param {Function} [onTeamClick]  called with (teamId) when a chip is clicked
+ * @param {Function} [onTeamClick]  called with (teamId) when chip label is clicked
+ * @param {Function} [onTeamEdit]   called with (teamId) when edit ✏ button is clicked
  */
-export function buildLegend(onTeamClick) {
+export function buildLegend(onTeamClick, onTeamEdit) {
   const legend = document.getElementById("legend");
   if (!legend) return;
 
@@ -109,15 +113,29 @@ export function buildLegend(onTeamClick) {
     const chip = document.createElement("div");
     chip.className    = "chip";
     chip.dataset.team = teamId;
-    chip.title        = `Assign to ${teamId} ${name}`;
 
     chip.innerHTML = `
       <span class="chip-dot" style="background:${color}"></span>
-      <span class="chip-label">${teamId} ${name}</span>
+      <span class="chip-label" title="Assign to ${teamId} ${name}">${teamId} ${name}</span>
+      <button class="chip-edit-btn" title="Rename or delete ${teamId}" aria-label="Edit team ${teamId}">✏️</button>
     `;
 
+    // Left-click on the label area → assign
+    const label = chip.querySelector(".chip-label");
     if (onTeamClick) {
-      chip.addEventListener("click", () => onTeamClick(teamId));
+      label.addEventListener("click", e => {
+        e.stopPropagation();
+        onTeamClick(teamId);
+      });
+    }
+
+    // Click on edit button → open edit modal
+    const editBtn = chip.querySelector(".chip-edit-btn");
+    if (onTeamEdit) {
+      editBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        onTeamEdit(teamId);
+      });
     }
 
     legend.appendChild(chip);

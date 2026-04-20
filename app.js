@@ -19,11 +19,15 @@ import {
   undo,
   nextTeamId,
   addTeam,
+  renameTeam,
+  deleteTeam,
+  teamDeskCount,
+  teamColor,
   assignDesks,
   registerDesk,
 } from "./state.js";
 
-import { render, applyHighlight, setTeamClickHandler } from "./render.js";
+import { render, applyHighlight, setTeamClickHandler, setTeamEditHandler } from "./render.js";
 
 import {
   loadSVG,
@@ -40,6 +44,8 @@ import {
   deactivateCompare,
   refreshCompare,
 } from "./compare.js";
+
+import { initDragSelect, destroyDragSelect } from "./dragSelect.js";
 
 // ── Safe event binder ─────────────────────────────────────────────────────────
 
@@ -81,6 +87,116 @@ setTeamClickHandler(teamId => {
   render();
 });
 
+// ── Team edit modal ───────────────────────────────────────────────────────────
+
+setTeamEditHandler(teamId => openTeamEditModal(teamId));
+
+let _editingTeamId = null;
+
+function openTeamEditModal(teamId) {
+  _editingTeamId = teamId;
+  document.getElementById("teamEditTitle").textContent    = `Edit ${teamId}`;
+  document.getElementById("teamEditDot").style.background = teamColor(teamId);
+  document.getElementById("teamEditInput").value          = AppState.teamNames[teamId] || "";
+  document.getElementById("teamEditModal").style.display  = "block";
+  document.getElementById("teamEditInput").focus();
+  document.getElementById("teamEditInput").select();
+}
+
+function closeTeamEditModal() {
+  document.getElementById("teamEditModal").style.display = "none";
+  _editingTeamId = null;
+}
+
+function applyTeamSave() {
+  const input = document.getElementById("teamEditInput");
+  const newName = input.value.trim();
+  if (!newName || !_editingTeamId) return;
+  renameTeam(_editingTeamId, newName);
+  saveState();
+  closeTeamEditModal();
+  render();
+}
+
+function applyTeamDelete() {
+  if (!_editingTeamId) return;
+  const count     = teamDeskCount(_editingTeamId);
+  const teamLabel = `${_editingTeamId} ${AppState.teamNames[_editingTeamId]}`;
+
+  if (count === 0) {
+    deleteTeam(_editingTeamId, false);
+    saveState();
+    closeTeamEditModal();
+    render();
+    return;
+  }
+
+  // Team has assignments — show inline confirmation
+  const modal = document.getElementById("teamEditModal");
+  const color = teamColor(_editingTeamId);
+  const dayWord = count === 1 ? "desk-day" : "desk-days";
+
+  modal.innerHTML = `
+    <div class="team-edit-header">
+      <span class="team-edit-dot" style="background:${color}"></span>
+      <h3 style="margin:0;font-size:15px;color:var(--brand-dark);">Delete ${teamLabel}?</h3>
+    </div>
+    <p style="margin:0 0 16px;font-size:13px;color:var(--text-muted);line-height:1.5;">
+      This team has <strong>${count}</strong> ${dayWord} assigned across the week.
+    </p>
+    <div class="modal-actions" style="flex-wrap:wrap;">
+      <button id="btn-dc-unassign" class="btn-danger">Delete &amp; Unassign</button>
+      <button id="btn-dc-keep">Delete, Keep Colours</button>
+      <button id="btn-dc-cancel" class="btn-secondary">Cancel</button>
+    </div>
+  `;
+
+  const tid = _editingTeamId; // capture before closeTeamEditModal clears it
+
+  document.getElementById("btn-dc-unassign").addEventListener("click", () => {
+    deleteTeam(tid, true); saveState(); rebuildTeamEditModal(); closeTeamEditModal(); render();
+  });
+  document.getElementById("btn-dc-keep").addEventListener("click", () => {
+    deleteTeam(tid, false); saveState(); rebuildTeamEditModal(); closeTeamEditModal(); render();
+  });
+  document.getElementById("btn-dc-cancel").addEventListener("click", () => {
+    rebuildTeamEditModal(); closeTeamEditModal();
+  });
+}
+
+// Restore the modal's original DOM structure after showDeleteConfirm replaced it
+function rebuildTeamEditModal() {
+  document.getElementById("teamEditModal").innerHTML = `
+    <div class="team-edit-header">
+      <span class="team-edit-dot" id="teamEditDot"></span>
+      <h3 id="teamEditTitle">Edit Team</h3>
+    </div>
+    <div class="team-edit-body">
+      <label for="teamEditInput">Name</label>
+      <input id="teamEditInput" type="text" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="modal-actions">
+      <button id="btn-team-edit-save">Save</button>
+      <button id="btn-team-edit-delete" class="btn-danger">Delete</button>
+      <button id="btn-team-edit-cancel" class="btn-secondary">Cancel</button>
+    </div>
+  `;
+  bindTeamEditModalButtons();
+}
+
+function bindTeamEditModalButtons() {
+  document.getElementById("btn-team-edit-save").addEventListener("click", applyTeamSave);
+  document.getElementById("btn-team-edit-delete").addEventListener("click", applyTeamDelete);
+  document.getElementById("btn-team-edit-cancel").addEventListener("click", closeTeamEditModal);
+  document.getElementById("teamEditInput").addEventListener("keydown", e => {
+    if (e.key === "Enter")  applyTeamSave();
+    if (e.key === "Escape") closeTeamEditModal();
+  });
+}
+
+// Bind initial modal buttons on load
+bindTeamEditModalButtons();
+
 // ── Load SVG then initialise ──────────────────────────────────────────────────
 
 loadSVG("svgContainer", () => {
@@ -89,6 +205,11 @@ loadSVG("svgContainer", () => {
   });
   loadState();
   setupDeskClicks();
+
+  // Attach Shift+drag rubber-band selection
+  const svgEl = document.querySelector("#svgContainer svg");
+  if (svgEl) initDragSelect(svgEl);
+
   render();
 });
 
@@ -98,8 +219,22 @@ function setupDeskClicks() {
   const svgEl = document.querySelector("#svgContainer svg");
   if (!svgEl) return;
 
+  // Track whether the previous mousedown was a Shift drag start,
+  // so the click event that fires after mouseup doesn't clear the selection.
+  let suppressNextClick = false;
+
+  svgEl.addEventListener("mousedown", e => {
+    suppressNextClick = e.shiftKey;
+  });
+
   svgEl.addEventListener("click", e => {
     if (AppState.mode === "compare") return;
+
+    if (suppressNextClick) {
+      suppressNextClick = false;
+      return;
+    }
+
     const desk = e.target.closest("g[id^='desk']");
     if (!desk) {
       clearSelection();
@@ -116,8 +251,15 @@ function setupDeskClicks() {
 
 elMode.addEventListener("change", () => {
   AppState.mode = elMode.value;
-  if (AppState.mode === "compare") { activateCompare(); }
-  else { deactivateCompare(); render(); }
+  if (AppState.mode === "compare") {
+    destroyDragSelect();
+    activateCompare();
+  } else {
+    deactivateCompare();
+    const svgEl = document.querySelector("#svgContainer svg");
+    if (svgEl) initDragSelect(svgEl);
+    render();
+  }
 });
 
 // ── Day selectors ─────────────────────────────────────────────────────────────
