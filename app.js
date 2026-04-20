@@ -93,109 +93,97 @@ setTeamEditHandler(teamId => openTeamEditModal(teamId));
 
 let _editingTeamId = null;
 
+// All modal elements — grabbed once, never recreated
+const _mel = {
+  modal:        document.getElementById("teamEditModal"),
+  editPanel:    document.getElementById("teamEditPanel"),
+  deletePanel:  document.getElementById("teamDeletePanel"),
+  dot:          document.getElementById("teamEditDot"),
+  title:        document.getElementById("teamEditTitle"),
+  input:        document.getElementById("teamEditInput"),
+  deleteDot:    document.getElementById("teamDeleteDot"),
+  deleteTitle:  document.getElementById("teamDeleteTitle"),
+  deleteMsg:    document.getElementById("teamDeleteMsg"),
+};
+
 function openTeamEditModal(teamId) {
-  _editingTeamId = teamId;
-  document.getElementById("teamEditTitle").textContent    = `Edit ${teamId}`;
-  document.getElementById("teamEditDot").style.background = teamColor(teamId);
-  document.getElementById("teamEditInput").value          = AppState.teamNames[teamId] || "";
-  document.getElementById("teamEditModal").style.display  = "block";
-  document.getElementById("teamEditInput").focus();
-  document.getElementById("teamEditInput").select();
+  _editingTeamId                = teamId;
+  _mel.title.textContent        = `Edit ${teamId}`;
+  _mel.dot.style.background     = teamColor(teamId);
+  _mel.input.value              = AppState.teamNames[teamId] || "";
+  _mel.editPanel.style.display   = "block";
+  _mel.deletePanel.style.display = "none";
+  _mel.modal.style.display       = "block";
+  _mel.input.focus();
+  _mel.input.select();
 }
 
 function closeTeamEditModal() {
-  document.getElementById("teamEditModal").style.display = "none";
+  _mel.modal.style.display = "none";
   _editingTeamId = null;
 }
 
-function applyTeamSave() {
-  const input = document.getElementById("teamEditInput");
-  const newName = input.value.trim();
+function showDeletePanel(teamId) {
+  const count    = teamDeskCount(teamId);
+  const dayWord  = count === 1 ? "desk-day" : "desk-days";
+  const name     = AppState.teamNames[teamId] || teamId;
+
+  _mel.deleteDot.style.background = teamColor(teamId);
+  _mel.deleteTitle.textContent    = `Delete ${teamId} ${name}?`;
+  _mel.deleteMsg.innerHTML        = count > 0
+    ? `This team has <strong>${count}</strong> ${dayWord} assigned across the week.`
+    : `This team has no desk assignments.`;
+
+  _mel.editPanel.style.display   = "none";
+  _mel.deletePanel.style.display = "block";
+}
+
+// ── Edit panel buttons ────────────────────────────────────────────────────────
+
+document.getElementById("btn-team-edit-save").addEventListener("click", () => {
+  const newName = _mel.input.value.trim();
   if (!newName || !_editingTeamId) return;
   renameTeam(_editingTeamId, newName);
   saveState();
   closeTeamEditModal();
   render();
-}
+});
 
-function applyTeamDelete() {
+document.getElementById("btn-team-edit-delete").addEventListener("click", () => {
   if (!_editingTeamId) return;
-  const count     = teamDeskCount(_editingTeamId);
-  const teamLabel = `${_editingTeamId} ${AppState.teamNames[_editingTeamId]}`;
+  showDeletePanel(_editingTeamId);
+});
 
-  if (count === 0) {
-    deleteTeam(_editingTeamId, false);
-    saveState();
-    closeTeamEditModal();
-    render();
-    return;
-  }
+document.getElementById("btn-team-edit-cancel").addEventListener("click", closeTeamEditModal);
 
-  // Team has assignments — show inline confirmation
-  const modal = document.getElementById("teamEditModal");
-  const color = teamColor(_editingTeamId);
-  const dayWord = count === 1 ? "desk-day" : "desk-days";
+_mel.input.addEventListener("keydown", e => {
+  if (e.key === "Enter")  document.getElementById("btn-team-edit-save").click();
+  if (e.key === "Escape") closeTeamEditModal();
+});
 
-  modal.innerHTML = `
-    <div class="team-edit-header">
-      <span class="team-edit-dot" style="background:${color}"></span>
-      <h3 style="margin:0;font-size:15px;color:var(--brand-dark);">Delete ${teamLabel}?</h3>
-    </div>
-    <p style="margin:0 0 16px;font-size:13px;color:var(--text-muted);line-height:1.5;">
-      This team has <strong>${count}</strong> ${dayWord} assigned across the week.
-    </p>
-    <div class="modal-actions" style="flex-wrap:wrap;">
-      <button id="btn-dc-unassign" class="btn-danger">Delete &amp; Unassign</button>
-      <button id="btn-dc-keep">Delete, Keep Colours</button>
-      <button id="btn-dc-cancel" class="btn-secondary">Cancel</button>
-    </div>
-  `;
+// ── Delete panel buttons ──────────────────────────────────────────────────────
 
-  const tid = _editingTeamId; // capture before closeTeamEditModal clears it
+document.getElementById("btn-dc-unassign").addEventListener("click", () => {
+  if (!_editingTeamId) return;
+  deleteTeam(_editingTeamId, true);
+  saveState();
+  closeTeamEditModal();
+  render();
+});
 
-  document.getElementById("btn-dc-unassign").addEventListener("click", () => {
-    deleteTeam(tid, true); saveState(); rebuildTeamEditModal(); closeTeamEditModal(); render();
-  });
-  document.getElementById("btn-dc-keep").addEventListener("click", () => {
-    deleteTeam(tid, false); saveState(); rebuildTeamEditModal(); closeTeamEditModal(); render();
-  });
-  document.getElementById("btn-dc-cancel").addEventListener("click", () => {
-    rebuildTeamEditModal(); closeTeamEditModal();
-  });
-}
+document.getElementById("btn-dc-keep").addEventListener("click", () => {
+  if (!_editingTeamId) return;
+  deleteTeam(_editingTeamId, false);
+  saveState();
+  closeTeamEditModal();
+  render();
+});
 
-// Restore the modal's original DOM structure after showDeleteConfirm replaced it
-function rebuildTeamEditModal() {
-  document.getElementById("teamEditModal").innerHTML = `
-    <div class="team-edit-header">
-      <span class="team-edit-dot" id="teamEditDot"></span>
-      <h3 id="teamEditTitle">Edit Team</h3>
-    </div>
-    <div class="team-edit-body">
-      <label for="teamEditInput">Name</label>
-      <input id="teamEditInput" type="text" autocomplete="off" spellcheck="false">
-    </div>
-    <div class="modal-actions">
-      <button id="btn-team-edit-save">Save</button>
-      <button id="btn-team-edit-delete" class="btn-danger">Delete</button>
-      <button id="btn-team-edit-cancel" class="btn-secondary">Cancel</button>
-    </div>
-  `;
-  bindTeamEditModalButtons();
-}
-
-function bindTeamEditModalButtons() {
-  document.getElementById("btn-team-edit-save").addEventListener("click", applyTeamSave);
-  document.getElementById("btn-team-edit-delete").addEventListener("click", applyTeamDelete);
-  document.getElementById("btn-team-edit-cancel").addEventListener("click", closeTeamEditModal);
-  document.getElementById("teamEditInput").addEventListener("keydown", e => {
-    if (e.key === "Enter")  applyTeamSave();
-    if (e.key === "Escape") closeTeamEditModal();
-  });
-}
-
-// Bind initial modal buttons on load
-bindTeamEditModalButtons();
+document.getElementById("btn-dc-cancel").addEventListener("click", () => {
+  // Go back to edit panel
+  _mel.deletePanel.style.display = "none";
+  _mel.editPanel.style.display   = "block";
+});
 
 // ── Load SVG then initialise ──────────────────────────────────────────────────
 

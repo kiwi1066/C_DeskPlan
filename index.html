@@ -74,20 +74,39 @@
   </div>
 
   <!-- Team edit modal -->
-  <div id="teamEditModal" role="dialog" aria-modal="true" aria-labelledby="teamEditTitle">
-    <div class="team-edit-header">
-      <span class="team-edit-dot" id="teamEditDot"></span>
-      <h3 id="teamEditTitle">Edit Team</h3>
+  <div id="teamEditModal" role="dialog" aria-modal="true">
+
+    <!-- Panel 1: Edit name -->
+    <div id="teamEditPanel">
+      <div class="team-edit-header">
+        <span class="team-edit-dot" id="teamEditDot"></span>
+        <h3 id="teamEditTitle">Edit Team</h3>
+      </div>
+      <div class="team-edit-body">
+        <label for="teamEditInput">Name</label>
+        <input id="teamEditInput" type="text" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="modal-actions">
+        <button id="btn-team-edit-save">Save</button>
+        <button id="btn-team-edit-delete" class="btn-danger">Delete</button>
+        <button id="btn-team-edit-cancel" class="btn-secondary">Cancel</button>
+      </div>
     </div>
-    <div class="team-edit-body">
-      <label for="teamEditInput">Name</label>
-      <input id="teamEditInput" type="text" autocomplete="off" spellcheck="false">
+
+    <!-- Panel 2: Confirm delete (hidden until needed) -->
+    <div id="teamDeletePanel" style="display:none">
+      <div class="team-edit-header">
+        <span class="team-edit-dot" id="teamDeleteDot"></span>
+        <h3 id="teamDeleteTitle">Delete Team?</h3>
+      </div>
+      <p id="teamDeleteMsg" style="margin:0 0 16px;font-size:13px;color:var(--text-muted);line-height:1.5;"></p>
+      <div class="modal-actions" style="flex-wrap:wrap;">
+        <button id="btn-dc-unassign" class="btn-danger">Delete &amp; Unassign</button>
+        <button id="btn-dc-keep">Delete, Keep Colours</button>
+        <button id="btn-dc-cancel" class="btn-secondary">Cancel</button>
+      </div>
     </div>
-    <div class="modal-actions">
-      <button id="btn-team-edit-save">Save</button>
-      <button id="btn-team-edit-delete" class="btn-danger">Delete</button>
-      <button id="btn-team-edit-cancel" class="btn-secondary">Cancel</button>
-    </div>
+
   </div>
 
   <div class="map-area">
