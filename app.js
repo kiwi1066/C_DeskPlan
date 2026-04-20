@@ -317,21 +317,14 @@ function switchFloor(buildingId, floorId) {
   // Destroy drag select on old SVG
   destroyDragSelect();
 
-  // Load the new SVG
   loadSVG("svgContainer", floor.plan, () => {
-    // Register all desks from the new SVG
-    document.querySelectorAll("#svgContainer g[id^='desk']").forEach(el => {
+    AppState.deskSelector = floor.deskSelector;
+    document.querySelectorAll(`#svgContainer ${floor.deskSelector}`).forEach(el => {
       registerDesk(el.id);
     });
-
-    // Restore saved state for this floor
     loadState();
-
-    // Re-attach interactions
-    setupDeskClicks();
-    const svgEl = document.querySelector("#svgContainer svg");
-    if (svgEl) initDragSelect(svgEl);
-
+    const freshSvg = setupDeskClicks(floor.deskSelector);
+    if (freshSvg) initDragSelect(freshSvg, floor.deskSelector);
     render();
     hideLoading();
   });
@@ -371,13 +364,13 @@ async function boot() {
     showLoading(`Loading ${title}…`);
 
     loadSVG("svgContainer", floor.plan, () => {
-      document.querySelectorAll("#svgContainer g[id^='desk']").forEach(el => {
+      AppState.deskSelector = floor.deskSelector;
+      document.querySelectorAll(`#svgContainer ${floor.deskSelector}`).forEach(el => {
         registerDesk(el.id);
       });
       loadState();
-      setupDeskClicks();
-      const svgEl = document.querySelector("#svgContainer svg");
-      if (svgEl) initDragSelect(svgEl);
+      const freshSvg = setupDeskClicks(floor.deskSelector);
+      if (freshSvg) initDragSelect(freshSvg, floor.deskSelector);
       render();
       hideLoading();
     });
@@ -400,9 +393,9 @@ boot();
 
 // ── Desk click handling ───────────────────────────────────────────────────────
 
-function setupDeskClicks() {
+function setupDeskClicks(deskSelector) {
   const svgEl = document.querySelector("#svgContainer svg");
-  if (!svgEl) return;
+  if (!svgEl) return null;
 
   // Clone to remove any old listeners from a previous floor's SVG
   const fresh = svgEl.cloneNode(true);
@@ -418,13 +411,15 @@ function setupDeskClicks() {
     if (AppState.mode === "compare") return;
     if (suppressNextClick) { suppressNextClick = false; return; }
 
-    const desk = e.target.closest("g[id^='desk']");
+    const desk = e.target.closest(deskSelector);
     if (!desk) { clearSelection(); applyHighlight(); return; }
 
     const additive = AppState.multiMode || e.ctrlKey || e.metaKey;
     toggleDeskSelection(desk.id, additive);
     applyHighlight();
   });
+
+  return fresh;  // return so initDragSelect gets the live node
 }
 
 // ── Mode switch ───────────────────────────────────────────────────────────────
@@ -436,8 +431,8 @@ elMode.addEventListener("change", () => {
     activateCompare(getCurrentFloor().plan);
   } else {
     deactivateCompare();
-    const svgEl = document.querySelector("#svgContainer svg");
-    if (svgEl) initDragSelect(svgEl);
+    const freshSvg = setupDeskClicks(AppState.deskSelector);
+    if (freshSvg) initDragSelect(freshSvg, AppState.deskSelector);
     render();
   }
 });

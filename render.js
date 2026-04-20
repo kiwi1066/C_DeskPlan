@@ -32,7 +32,16 @@ export function renderContainer(containerId, day) {
     const teamId = AppState.deskData[deskId][day];
     const color  = teamColor(teamId);
 
-    shape.setAttribute("fill", color);
+    // Use fill-opacity instead of transparent fill so the shape still
+    // receives pointer events even when unassigned
+    if (teamId) {
+      shape.setAttribute("fill", color);
+      shape.setAttribute("fill-opacity", "1");
+    } else {
+      shape.setAttribute("fill", "#000000");
+      shape.setAttribute("fill-opacity", "0");
+    }
+    shape.setAttribute("pointer-events", "all");
 
     // Tooltip
     let title = shape.querySelector("title");
@@ -76,7 +85,7 @@ export function applyHighlight() {
   const container = document.getElementById("svgContainer");
   if (!container) return;
 
-  container.querySelectorAll("g[id^='desk']").forEach(deskEl => {
+  container.querySelectorAll(AppState.deskSelector).forEach(deskEl => {
     const shape = deskEl.querySelector("rect,polygon,path");
     if (!shape) return;
 

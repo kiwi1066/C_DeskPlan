@@ -32,7 +32,13 @@ export function loadSVG(containerId, svgFile, callback) {
       if (!el) return;
       el.innerHTML = svg;
       const svgEl = el.querySelector("svg");
-      if (svgEl) svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
+      if (svgEl) {
+        svgEl.setAttribute("preserveAspectRatio", "xMinYMin meet");
+        // Ensure all shapes receive pointer events regardless of fill/opacity
+        svgEl.querySelectorAll("rect,polygon,path").forEach(shape => {
+          shape.setAttribute("pointer-events", "all");
+        });
+      }
       if (callback) callback();
     })
     .catch(err => console.error(`Failed to load SVG (${svgFile}):`, err));
