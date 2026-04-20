@@ -17,7 +17,8 @@ let _floorId    = null;
 // ── Load config ───────────────────────────────────────────────────────────────
 
 export async function loadBuildings() {
-  const res  = await fetch("buildings.json");
+  const res = await fetch("buildings.json");
+  if (!res.ok) throw new Error(`buildings.json returned HTTP ${res.status}`);
   _buildings = await res.json();
 
   // Pick first building and first floor as defaults

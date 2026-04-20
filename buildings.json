@@ -11,7 +11,7 @@
   },
   "275G": {
     "label": "275 George St",
-    "floors": [ 
+    "floors": [
       {
         "id":    "L11",
         "label": "Level 11",
@@ -24,7 +24,7 @@
     "floors": [
       {
         "id":    "L5",
-        "label": "Level 7",
+        "label": "Level 5",
         "plan":  "400G_L5_deskPlan.svg"
       },
       {

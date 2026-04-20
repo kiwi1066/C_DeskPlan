@@ -357,7 +357,7 @@ async function boot() {
     document.title         = title + " — Desk Planner";
     elAppTitle.textContent = title + " — Desk Planner";
 
-    const floor  = getCurrentFloor();
+    const floor   = getCurrentFloor();
     const pngFile = floor.plan ? floor.plan.replace(/\.svg$/i, ".png") : "";
     elFloorPlanImg.src  = pngFile;
     elFloorPlanImg1.src = pngFile;
@@ -385,6 +385,14 @@ async function boot() {
   } catch (err) {
     console.error("Boot failed:", err);
     hideLoading();
+    // Show a visible error in the controls panel so it's not silent
+    elBuilding.innerHTML = `<option disabled selected>⚠ Could not load buildings.json</option>`;
+    elFloor.innerHTML    = `<option disabled selected>—</option>`;
+    document.getElementById("legend").innerHTML =
+      `<span style="color:#c00;font-size:12px;">
+        ⚠ Failed to load buildings.json (${err.message}).
+        Check the file is uploaded to your GitHub repo root.
+      </span>`;
   }
 }
 
