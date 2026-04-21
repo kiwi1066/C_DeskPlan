@@ -17,6 +17,11 @@
         "label": "Level 11",
         "plan":  "275G_L11_deskPlan.svg"
       }
+      {
+        "id":    "L9",
+        "label": "Level 9",
+        "plan":  "275G_L9_deskPlan.svg"
+      },
     ]
   },
   "400G": {
