@@ -226,12 +226,17 @@ button[data-active="true"] { background: var(--accent); }
   font-size: 11px;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, transform 0.2s;
   line-height: 1;
+  display: inline-block;
 }
 
 .category-header-wrap:hover .category-edit-btn {
   opacity: 1;
+}
+
+.category-edit-btn:hover {
+  transform: scale(1.35);
 }
 
 .category-edit-wrap {
