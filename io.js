@@ -53,10 +53,12 @@ export function loadSVG(containerId, svgFile, callback) {
 function buildCSV(teamIds) {
   const dayKeys = DAYS.map(d => d.key);
 
-  // Section 1: teams manifest — label reflects current category name
+  // Section 1: teams manifest
+  // #category must come before id,name so the parser sees it before skipNext fires
   const catLabel = AppState.categoryLabel || "Teams";
-  let csv = `#teams\nid,name\n`;
+  let csv = `#teams\n`;
   csv += `#category,${catLabel}\n`;
+  csv += `id,name\n`;
   teamIds.forEach(id => {
     csv += `${id},${AppState.teamNames[id]}\n`;
   });
@@ -126,16 +128,19 @@ export function handleDeskImport(file) {
         if (line === "#teams") { section = "teams"; skipNext = true; return; }
         if (line === "#data")  { section = "data";  skipNext = true; return; }
 
-        // Skip the header row that immediately follows each section marker
+        // Metadata lines (start with #) are never skipped — process them directly
+        if (line.startsWith("#")) {
+          if (section === "teams" && line.startsWith("#category,")) {
+            const restoredLabel = line.slice("#category,".length).trim();
+            if (restoredLabel) AppState.categoryLabel = restoredLabel;
+          }
+          return;
+        }
+
+        // Skip the header row (id,name or desk,mon,...) after each section marker
         if (skipNext) { skipNext = false; return; }
 
         if (section === "teams") {
-          // Special metadata row — restore category label
-          if (line.startsWith("#category,")) {
-            const restoredLabel = line.slice("#category,".length).trim();
-            if (restoredLabel) AppState.categoryLabel = restoredLabel;
-            return;
-          }
           const parts = line.split(",");
           if (parts.length < 2) return;
           const id   = parts[0].trim();
