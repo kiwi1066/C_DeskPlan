@@ -339,7 +339,7 @@ function switchFloor(buildingId, floorId) {
     loadState();
 
     // Apply category label — loaded state takes priority, then buildings.json default
-    applyFloorConfig(floor);
+    applyFloorConfig();
 
     const freshSvg = setupDeskClicks(floor.deskSelector);
     if (freshSvg) initDragSelect(freshSvg, floor.deskSelector);
@@ -393,7 +393,7 @@ async function boot() {
       loadState();
 
       // Apply category label — loaded state takes priority, then buildings.json default
-      applyFloorConfig(floor);
+      applyFloorConfig();
 
       const freshSvg = setupDeskClicks(floor.deskSelector);
       if (freshSvg) initDragSelect(freshSvg, floor.deskSelector);
@@ -448,8 +448,7 @@ function initZoomForFloor() {
  * Called after loadState() so saved label takes priority over buildings.json default.
  * If loadState didn't restore a label, fall back to the floor config.
  */
-function applyFloorConfig(floor) {
-  if (!AppState.categoryLabel) AppState.categoryLabel = floor.categoryLabel;
+function applyFloorConfig() {
   updateCategoryUI();
   applySummaryVisibility();
 }

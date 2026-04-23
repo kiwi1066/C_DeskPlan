@@ -49,10 +49,9 @@ export function getCurrentFloor() {
     buildingId:    _buildingId,
     buildingLabel: bldg.label ?? _buildingId,
     floorId:       _floorId,
-    floorLabel:    floor?.label         ?? _floorId ?? "",
-    plan:          floor?.plan          ?? null,
-    deskSelector:  floor?.deskSelector  ?? "g[id^='desk']",
-    categoryLabel: floor?.categoryLabel ?? "Teams",
+    floorLabel:    floor?.label        ?? _floorId ?? "",
+    plan:          floor?.plan         ?? null,
+    deskSelector:  floor?.deskSelector ?? "g[id^='desk']",
   };
 }
 
