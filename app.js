@@ -76,10 +76,11 @@ import {
 } from "./buildings.js";
 
 // ── Render wrapper ────────────────────────────────────────────────────────────
-// Reapplies summary visibility after every render since updateSummary rebuilds the div
+// Keeps category label UI and summary visibility in sync after every render
 
 function render() {
   _render();
+  updateCategoryUI();
   applySummaryVisibility();
 }
 
