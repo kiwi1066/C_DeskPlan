@@ -43,7 +43,8 @@ import {
   loadSVG,
   triggerImport,
   handleDeskImport,
-  exportCSV,
+  exportCSVAllTeams,
+  exportCSVAssignedTeams,
   exportImage,
 } from "./io.js";
 
@@ -498,7 +499,8 @@ bind("btn-zoom-in",    "click", zoomIn);
 bind("btn-zoom-out",   "click", zoomOut);
 bind("btn-zoom-reset", "click", resetZoom);
 bind("btn-import",        "click", triggerImport);
-bind("btn-export",        "click", exportCSV);
+bind("btn-export-all",      "click", exportCSVAllTeams);
+bind("btn-export-assigned", "click", exportCSVAssignedTeams);
 bind("btn-export-image",  "click", () => {
   const floor = getCurrentFloor();
   exportImage(floor.plan, floorTitle());

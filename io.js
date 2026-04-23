@@ -46,25 +46,55 @@ export function loadSVG(containerId, svgFile, callback) {
 
 // ── CSV — Desk data export ────────────────────────────────────────────────────
 
-export function exportCSV() {
-  const fileName = prompt("Enter file name:", "desk-data");
-  if (!fileName) return;
+/**
+ * Shared CSV builder.
+ * @param {string[]} teamIds  — which teams to include in the #teams section
+ */
+function buildCSV(teamIds) {
+  const dayKeys = DAYS.map(d => d.key);
 
-  const dayKeys   = DAYS.map(d => d.key);
-  const dayLabels = DAYS.map(d => d.key);
+  // Section 1: teams manifest
+  let csv = "#teams\nid,name\n";
+  teamIds.forEach(id => {
+    csv += `${id},${AppState.teamNames[id]}\n`;
+  });
 
-  // header: desk, mon, tue, wed, thu, fri, mon_name, tue_name …
-  const nameHeaders = dayLabels.map(d => `${d}_name`).join(",");
-  let csv = `desk,${dayLabels.join(",")},${nameHeaders}\n`;
+  // Section 2: desk assignments
+  const nameHeaders = dayKeys.map(d => `${d}_name`).join(",");
+  csv += `#data\ndesk,${dayKeys.join(",")},${nameHeaders}\n`;
 
   Object.keys(AppState.deskData).forEach(deskId => {
-    const row      = AppState.deskData[deskId];
-    const ids      = dayKeys.map(d => row[d] || "").join(",");
-    const names    = dayKeys.map(d => AppState.teamNames[row[d]] || "").join(",");
+    const row   = AppState.deskData[deskId];
+    const ids   = dayKeys.map(d => row[d] || "").join(",");
+    const names = dayKeys.map(d => AppState.teamNames[row[d]] || "").join(",");
     csv += `${deskId},${ids},${names}\n`;
   });
 
+  return csv;
+}
+
+function promptAndDownload(csv) {
+  const fileName = prompt("Enter file name:", "desk-data");
+  if (!fileName) return;
   downloadText(csv, fileName.replace(/\.csv$/i, "") + ".csv");
+}
+
+/** Export all teams — including those with no desks assigned */
+export function exportCSVAllTeams() {
+  const teamIds = getSortedTeamIds();
+  promptAndDownload(buildCSV(teamIds));
+}
+
+/** Export only teams that have at least one desk assigned on any day */
+export function exportCSVAssignedTeams() {
+  const assignedIds = new Set();
+  DAYS.forEach(({ key }) => {
+    Object.values(AppState.deskData).forEach(v => {
+      if (v[key]) assignedIds.add(v[key]);
+    });
+  });
+  const teamIds = getSortedTeamIds().filter(id => assignedIds.has(id));
+  promptAndDownload(buildCSV(teamIds));
 }
 
 // ── CSV — Desk data import ────────────────────────────────────────────────────
@@ -75,27 +105,66 @@ export function triggerImport() {
 
 export function handleDeskImport(file) {
   readText(file, text => {
-    const rows = text.split("\n").slice(1); // skip header
+    const lines = text.split("\n");
 
-    rows.forEach(row => {
-      const cols = row.split(",");
-      const deskId = cols[0]?.trim();
-      if (!deskId || !AppState.deskData[deskId]) return;
+    // Detect new format (has #teams section) vs old format
+    const hasTeamsSection = lines.some(l => l.trim() === "#teams");
 
-      // Columns 1-5: team IDs per day
-      DAYS.forEach(({ key }, i) => {
-        AppState.deskData[deskId][key] = (cols[i + 1] || "").trim();
+    if (hasTeamsSection) {
+      // ── New format: parse #teams and #data sections separately
+
+      let section = null;
+      let skipNext = false; // skip the header row after each section marker
+
+      lines.forEach(raw => {
+        const line = raw.trim().replace(/\r/g, "");
+        if (!line) return;
+
+        // Section markers
+        if (line === "#teams") { section = "teams"; skipNext = true; return; }
+        if (line === "#data")  { section = "data";  skipNext = true; return; }
+
+        // Skip the header row that immediately follows each section marker
+        if (skipNext) { skipNext = false; return; }
+
+        if (section === "teams") {
+          const parts = line.split(",");
+          if (parts.length < 2) return;
+          const id   = parts[0].trim();
+          const name = parts[1].trim();
+          if (id && name) addTeam(id, name);
+        }
+
+        if (section === "data") {
+          const cols   = line.split(",");
+          const deskId = cols[0]?.trim();
+          if (!deskId || !AppState.deskData[deskId]) return;
+          DAYS.forEach(({ key }, i) => {
+            AppState.deskData[deskId][key] = (cols[i + 1] || "").trim();
+          });
+        }
       });
 
-      // Columns 6-10: team names per day (optional, from older exports)
-      if (cols.length >= 11) {
+    } else {
+      // ── Old format: single section, team names in columns 6-10
+      lines.slice(1).forEach(raw => {
+        const cols   = raw.split(",");
+        const deskId = cols[0]?.trim();
+        if (!deskId || !AppState.deskData[deskId]) return;
+
         DAYS.forEach(({ key }, i) => {
-          const teamId   = (cols[i + 1] || "").trim();
-          const teamName = (cols[i + 6] || "").trim();
-          if (teamId && teamName) addTeam(teamId, teamName);
+          AppState.deskData[deskId][key] = (cols[i + 1] || "").trim();
         });
-      }
-    });
+
+        if (cols.length >= 11) {
+          DAYS.forEach(({ key }, i) => {
+            const teamId   = (cols[i + 1] || "").trim();
+            const teamName = (cols[i + 6] || "").trim();
+            if (teamId && teamName) addTeam(teamId, teamName);
+          });
+        }
+      });
+    }
 
     saveState();
     render();
@@ -108,9 +177,14 @@ export function triggerTeamImport() {
   triggerFileInput("teamFileInput");
 }
 
-export function handleTeamImport(file) {
+/**
+ * @param {File}   file
+ * @param {string} mode  "replace" (default) | "merge"
+ */
+export function handleTeamImport(file, mode = "replace") {
   readText(file, text => {
-    removeAllTeams();
+    if (mode === "replace") removeAllTeams();
+
     const rows = text.split("\n").slice(1); // skip header
 
     rows.forEach(row => {
@@ -119,7 +193,12 @@ export function handleTeamImport(file) {
 
       const id   = parts[0].trim().replace(/\r/g, "");
       const name = parts[1].trim().replace(/\r/g, "");
-      if (id && name) addTeam(id, name);
+
+      // In merge mode, skip teams that already exist so existing IDs/colours are kept
+      if (id && name) {
+        if (mode === "merge" && AppState.teamNames[id]) return;
+        addTeam(id, name);
+      }
     });
 
     saveState();

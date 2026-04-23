@@ -132,6 +132,51 @@ select:focus {
   min-width: 50px;
 }
 
+/* ── Export submenu ──────────────────────────────────────────── */
+.submenu-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.submenu-trigger {
+  /* Inherits button styles — just needs a slight indicator */
+}
+
+.submenu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: 500;
+  min-width: 180px;
+  padding: 4px 0;
+  flex-direction: column;
+}
+
+.submenu-wrap:hover .submenu,
+.submenu-wrap:focus-within .submenu {
+  display: flex;
+}
+
+.submenu button {
+  background: transparent;
+  color: var(--text);
+  border-radius: 0;
+  padding: 8px 14px;
+  width: 100%;
+  justify-content: flex-start;
+  font-size: 13px;
+}
+
+.submenu button:hover {
+  background: var(--brand-light);
+  color: var(--brand-dark);
+}
+
 /* ── Buttons ─────────────────────────────────────────────────── */
 button {
   display: inline-flex;

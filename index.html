@@ -50,7 +50,16 @@
         <span class="toolbar-label">File</span>
         <button id="btn-add-team">➕ Add Team</button>
         <button id="btn-import">📂 Import</button>
-        <button id="btn-export">⬇ Export</button>
+
+        <!-- Export submenu -->
+        <div class="submenu-wrap" id="exportSubmenuWrap">
+          <button id="btn-export" class="submenu-trigger">⬇ Export ▾</button>
+          <div class="submenu" id="exportSubmenu">
+            <button id="btn-export-all">⬇ Export All Teams</button>
+            <button id="btn-export-assigned">⬇ Export Assigned Teams</button>
+          </div>
+        </div>
+
         <button id="btn-export-image">📸 Export Image</button>
       </div>
       <div class="toolbar-section">
