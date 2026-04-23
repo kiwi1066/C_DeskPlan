@@ -212,6 +212,13 @@ button[data-active="true"] { background: var(--accent); }
   margin: 12px 0 6px;
 }
 
+/* Tight wrapper — hover zone is only as wide as the text + icon */
+.category-label-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .category-label-text {
   margin: 0;
   cursor: pointer;
@@ -229,14 +236,17 @@ button[data-active="true"] { background: var(--accent); }
   transition: opacity 0.15s, transform 0.2s;
   line-height: 1;
   display: inline-block;
+  background: none !important;  /* override global button:hover */
 }
 
-.category-header-wrap:hover .category-edit-btn {
+/* Only show pencil when hovering the tight label group */
+.category-label-group:hover .category-edit-btn {
   opacity: 1;
 }
 
 .category-edit-btn:hover {
   transform: scale(1.35);
+  background: none !important;
 }
 
 .category-edit-wrap {
