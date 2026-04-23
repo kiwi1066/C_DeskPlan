@@ -40,7 +40,6 @@
       gap: 16px;
     }
     .app-header h1 { margin: 0; font-size: 18px; font-weight: 600; }
-    .app-header .version { font-size: 12px; opacity: 0.7; }
 
     .page {
       display: flex;
@@ -52,7 +51,7 @@
     }
 
     /* Sidebar */
-    .sidebar { width: 180px; flex-shrink: 0; position: sticky; top: 20px; }
+    .sidebar { width: 190px; flex-shrink: 0; position: sticky; top: 20px; }
     .sidebar nav {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -78,7 +77,7 @@
       color: #aab;
     }
 
-    /* Main */
+    /* Main content */
     .container {
       flex: 1;
       min-width: 0;
@@ -126,6 +125,7 @@
     .tip  { background: var(--brand-light); border-left: 4px solid var(--brand-mid); }
     .note { background: #fff8ec;            border-left: 4px solid #f0a500; }
 
+    /* Simulated button pills */
     .btn-pill {
       display: inline-flex;
       align-items: center;
@@ -141,7 +141,9 @@
     }
     .btn-pill.danger  { background: var(--danger); }
     .btn-pill.success { background: var(--accent); }
+    .btn-pill.muted   { background: #e8edf2; color: var(--text); border: 1px solid var(--border); }
 
+    /* Reference tables */
     .ref-table {
       width: 100%;
       border-collapse: collapse;
@@ -161,6 +163,7 @@
       margin: 24px 0 6px;
     }
 
+    /* Keyboard shortcut table */
     .key-table {
       width: 100%;
       border-collapse: collapse;
@@ -169,8 +172,9 @@
     }
     .key-table tr + tr td { border-top: 1px solid var(--border); }
     .key-table td { padding: 9px 8px; vertical-align: middle; }
-    .key-table td:first-child { width: 230px; white-space: nowrap; }
+    .key-table td:first-child { width: 240px; white-space: nowrap; }
 
+    /* CSV example blocks */
     .csv-block {
       background: #f6f8fa;
       border: 1px solid var(--border);
@@ -218,20 +222,22 @@
 
 <header class="app-header">
   <h1>Desk Planner — User Guide</h1>
-  <span class="version">Level 11</span>
 </header>
 
 <div class="page">
 
+  <!-- Sidebar navigation -->
   <aside class="sidebar">
     <nav>
       <div class="nav-section">Getting Started</div>
       <a href="#overview">Overview</a>
       <a href="#workflow">Basic Workflow</a>
+      <a href="#navigation">Building &amp; Floor</a>
 
       <div class="nav-section">Selecting Desks</div>
       <a href="#selecting">Click &amp; Multi</a>
       <a href="#drag-select">Shift+Drag</a>
+      <a href="#zoom">Zoom &amp; Pan</a>
 
       <div class="nav-section">Teams</div>
       <a href="#teams">Managing Teams</a>
@@ -251,72 +257,110 @@
 
   <main class="container">
 
+    <!-- ═══ Overview ═══ -->
     <h2 id="overview">Overview</h2>
     <p>
       The Desk Planner lets you visually assign desks to teams across the working week
-      using an interactive floor plan. Add teams, allocate desks by day, compare days
-      side-by-side, and export your plan as a CSV or image.
+      using an interactive floor plan. Navigate between buildings and floors, add teams,
+      allocate desks by day, compare days side-by-side, and export your plan as a CSV or image.
     </p>
     <p>
-      Your work is automatically saved to the browser after every change —
+      Your work is automatically saved to the browser after every change, per building and floor —
       you can close and reopen the tab without losing data. Use
       <span class="btn-pill">&#8595; Export</span> to create a portable backup file.
     </p>
 
+    <!-- ═══ Basic Workflow ═══ -->
     <h2 id="workflow">Basic Workflow</h2>
     <div class="steps">
       <ol>
+        <li>Select a <strong>Building</strong> and <strong>Floor</strong> from the dropdowns at the top of the controls panel.</li>
         <li>Choose a <strong>Day</strong> from the day dropdown.</li>
-        <li>Add teams via <span class="btn-pill">&#128101; Import Teams</span> (CSV) or <span class="btn-pill">&#10133; Add Team</span>.</li>
+        <li>Add teams using the <span class="btn-pill">&#10133; Add Team</span> button, or import a previous export with <span class="btn-pill">&#128194; Import</span>.</li>
         <li>Select one or more desks on the floor plan.</li>
-        <li>Click a team chip in the legend to assign the selected desks.</li>
-        <li>Repeat for each day, or use <span class="btn-pill">&#128203; Copy Day</span> to duplicate a day across the week.</li>
+        <li>Click a team chip in the Teams legend to assign the selected desks.</li>
+        <li>Repeat for each day, or use <span class="btn-pill">&#128203; Copy Day</span> to duplicate a day's assignments across the week.</li>
       </ol>
     </div>
     <div class="tip">
-      <strong>Tip:</strong> Hover over any coloured desk to see a tooltip with the team name.
+      <strong>Tip:</strong> Hover over any coloured desk to see a tooltip showing the team name.
     </div>
 
+    <!-- ═══ Building & Floor Navigation ═══ -->
+    <h2 id="navigation">Building &amp; Floor Navigation</h2>
+    <p>
+      The <strong>Building</strong> and <strong>Floor</strong> dropdowns at the top of the
+      controls panel let you switch between locations. Each floor has its own completely
+      independent set of desk assignments and teams — switching floors saves the current
+      floor automatically before loading the new one.
+    </p>
+    <div class="note">
+      <strong>Note:</strong> Teams and desk assignments are stored per floor. A team called
+      "Finance" on Level 7 is independent of "Finance" on Level 11. Use
+      <span class="btn-pill">&#8595; Export</span> on each floor to back up each plan separately.
+    </div>
+
+    <!-- ═══ Selecting Desks ═══ -->
     <h2 id="selecting">Selecting Desks</h2>
     <p>Three ways to build a selection:</p>
     <ul>
       <li><strong>Single click</strong> — selects one desk and clears any previous selection.</li>
-      <li><kbd>Ctrl</kbd><strong>+click</strong> (or <kbd>Cmd</kbd>+click on Mac) — adds or removes a desk without clearing others.</li>
+      <li><kbd>Ctrl</kbd><strong>+click</strong> (or <kbd>Cmd</kbd>+click on Mac) — adds or removes a desk from the selection without clearing others.</li>
       <li><span class="btn-pill success">&#129329; Multi ON</span> — when active, every click adds to the selection automatically, no need to hold <kbd>Ctrl</kbd>.</li>
     </ul>
     <p>Clicking an empty area of the floor plan clears the selection.</p>
 
+    <!-- ═══ Shift+Drag ═══ -->
     <h2 id="drag-select">Shift+Drag Area Select</h2>
     <p>
       Hold <kbd>Shift</kbd> and drag across the floor plan to draw a selection rectangle.
       All desks whose area overlaps the rectangle are added to the selection on release.
     </p>
     <ul>
-      <li>The cursor changes to a <strong>crosshair</strong> when <kbd>Shift</kbd> is held, signalling that drag-select is ready.</li>
+      <li>The cursor changes to a <strong>crosshair</strong> when <kbd>Shift</kbd> is held, signalling drag-select is ready.</li>
       <li>Drag-select is always <strong>additive</strong> — existing selected desks are kept, so you can draw multiple regions.</li>
       <li>Accidental micro-drags (under 6px) are ignored and treated as a normal click.</li>
       <li>Drag-select is disabled in Compare mode.</li>
     </ul>
     <div class="tip">
-      <strong>Workflow:</strong> Use <kbd>Shift</kbd>+drag to select a zone roughly, then
-      <kbd>Ctrl</kbd>+click to fine-tune individual desks.
+      <strong>Workflow:</strong> Use <kbd>Shift</kbd>+drag to select a zone roughly,
+      then <kbd>Ctrl</kbd>+click to fine-tune individual desks.
     </div>
 
+    <!-- ═══ Zoom & Pan ═══ -->
+    <h2 id="zoom">Zoom &amp; Pan</h2>
+    <p>
+      Use the zoom controls above the floor plan to get a closer look at dense areas.
+    </p>
+    <ul>
+      <li><strong>＋ / －</strong> buttons — zoom in or out, centred on the middle of the map.</li>
+      <li><strong>Scroll wheel</strong> — zoom in or out centred on wherever your cursor is, so you can point at a desk cluster and scroll straight into it.</li>
+      <li><strong>⤢ Fit</strong> button — appears when zoomed in; returns the view to full fit.</li>
+      <li><strong>Click and drag</strong> on an empty area of the floor plan — pans around when zoomed in.</li>
+    </ul>
+    <div class="tip">
+      <strong>Tip:</strong> Zoom in first, then use <kbd>Shift</kbd>+drag to make precise
+      area selections on dense parts of the floor plan. All selection methods work normally at any zoom level.
+    </div>
+
+    <!-- ═══ Managing Teams ═══ -->
     <h2 id="teams">Managing Teams</h2>
+
     <p><strong>Adding teams</strong></p>
     <ul>
       <li><span class="btn-pill">&#10133; Add Team</span> — creates one team at a time. Enter a display name when prompted. The ID (T1, T2&hellip;) is assigned automatically.</li>
-      <li><span class="btn-pill">&#128101; Import Teams</span> — bulk-imports from a CSV file (see <a href="#import-export">Import &amp; Export</a>).</li>
+      <li><span class="btn-pill">&#128194; Import</span> — restores a previously exported desk plan, including the full team list.</li>
     </ul>
 
     <p><strong>Renaming a team</strong></p>
     <p>
-      Hover over any team chip in the legend — a <strong>&#9999;&#65039;</strong> edit button
+      Hover over any team chip in the Teams legend — a <strong>&#9999;&#65039;</strong> edit button
       appears on the right edge. Click it to open the team editor. Edit the name and
       press <strong>Save</strong> or <kbd>Enter</kbd>. Press <kbd>Escape</kbd> to cancel.
     </p>
     <div class="note">
       The team's <strong>ID</strong> (e.g. T1) never changes — only the display name is updated.
+      IDs stay consistent so team colours remain stable across exports and re-imports.
     </div>
 
     <p><strong>Deleting a team</strong></p>
@@ -326,37 +370,39 @@
     </p>
     <ul>
       <li><strong>Delete &amp; Unassign</strong> — removes the team and clears all its desk colours across every day.</li>
-      <li><strong>Delete, Keep Colours</strong> — removes the team from the legend but leaves desk colours in place, useful for gradual reassignment.</li>
+      <li><strong>Delete, Keep Colours</strong> — removes the team from the legend but leaves desk colours in place, useful when gradually reassigning desks.</li>
     </ul>
 
+    <!-- ═══ Assigning Desks ═══ -->
     <h2 id="assigning">Assigning Desks to a Team</h2>
     <ol>
-      <li>Select one or more desks using any selection method.</li>
+      <li>Select one or more desks using any selection method above.</li>
       <li>Click the team's coloured chip label in the <strong>Teams</strong> legend.<br>
-          <span style="color:var(--text-muted);font-size:12px;">(Click the label, not the &#9999;&#65039; edit button.)</span></li>
-      <li>Desk colours update instantly and the summary refreshes.</li>
+          <span style="color:var(--text-muted);font-size:12px;">(Click the label area — not the &#9999;&#65039; edit button.)</span></li>
+      <li>Desk colours update instantly and the summary panel refreshes.</li>
     </ol>
-    <p>To unassign, select the desks and use <span class="btn-pill">&#129535; Clear Desks</span>.</p>
+    <p>To unassign desks, select them and use <span class="btn-pill">&#129535; Clear Desks</span>.</p>
 
+    <!-- ═══ Toolbar Reference ═══ -->
     <h2 id="toolbar">Toolbar Reference</h2>
 
     <p class="group-label">File</p>
     <table class="ref-table">
       <tr>
-        <td><span class="btn-pill">&#128101; Import Teams</span></td>
-        <td>Imports a two-column CSV (<code>id,name</code>). Replaces any existing teams.</td>
+        <td><span class="btn-pill">&#10133; Add Team</span></td>
+        <td>Creates a new team manually. Enter a display name — the ID (T1, T2&hellip;) is assigned automatically.</td>
       </tr>
       <tr>
         <td><span class="btn-pill">&#128194; Import</span></td>
-        <td>Restores a previously exported desk-plan CSV, including assignments and team names across all days.</td>
+        <td>Restores a previously exported desk-plan CSV, including the full team list and desk assignments across all days.</td>
       </tr>
       <tr>
         <td><span class="btn-pill">&#8595; Export</span></td>
-        <td>Exports the full desk plan to CSV. You will be prompted for a file name.</td>
+        <td>Exports the full desk plan to CSV — always includes the complete team list, even teams with no desks assigned. You will be prompted for a file name.</td>
       </tr>
       <tr>
         <td><span class="btn-pill">&#128248; Export Image</span></td>
-        <td>Saves the current day's floor plan as a PNG with team colours and an allocation summary.</td>
+        <td>Saves the current day's floor plan as a PNG, including team colours and an allocation summary below the map.</td>
       </tr>
     </table>
 
@@ -364,62 +410,61 @@
     <table class="ref-table">
       <tr>
         <td><span class="btn-pill">&#128203; Copy Day</span></td>
-        <td>Copies all desk assignments from the current day to one or more other days selected via checkboxes.</td>
+        <td>Copies all desk assignments from the current day to one or more other days. Select target days via the checkboxes in the pop-up.</td>
       </tr>
       <tr>
         <td><span class="btn-pill">&#8617; Undo</span></td>
         <td>Reverts the last desk-assignment change. Supports up to 50 undo steps per session.</td>
       </tr>
       <tr>
+        <td><span class="btn-pill">&#129329; Multi</span></td>
+        <td>Toggles multi-select mode. When <span class="btn-pill success">&#129329; Multi ON</span> (green), every desk click adds to the selection without holding <kbd>Ctrl</kbd>.</td>
+      </tr>
+      <tr>
         <td><span class="btn-pill">&#129535; Clear Desks</span></td>
-        <td>Clears selected desks for the current day. If nothing is selected, clears the entire day.</td>
+        <td>Clears desk assignments for the current day. If desks are selected, only those desks are cleared. If nothing is selected, the entire day is cleared.</td>
       </tr>
       <tr>
         <td><span class="btn-pill">&#129529; Clear All</span></td>
-        <td>Clears all desk assignments and removes all teams without reloading the page.</td>
+        <td>Clears all desk assignments and removes all teams for the current floor, without reloading the page.</td>
       </tr>
       <tr>
         <td><span class="btn-pill danger">&#128465; Reset</span></td>
-        <td>Completely resets the application and reloads the page. All data is permanently lost.</td>
+        <td>Completely resets the application and reloads the page. All data for the current floor is permanently lost.</td>
       </tr>
     </table>
 
-    <p class="group-label">Select &amp; Teams</p>
+    <p class="group-label">Other</p>
     <table class="ref-table">
-      <tr>
-        <td><span class="btn-pill">&#129329; Multi</span></td>
-        <td>Toggles multi-select. When <span class="btn-pill success">&#129329; Multi ON</span>, every desk click adds to the selection without holding <kbd>Ctrl</kbd>.</td>
-      </tr>
-      <tr>
-        <td><span class="btn-pill">&#10133; Add Team</span></td>
-        <td>Creates a new team. Enter a display name — the ID is auto-assigned.</td>
-      </tr>
       <tr>
         <td><span class="btn-pill">&#10067; Help</span></td>
         <td>Opens this guide in a new tab.</td>
       </tr>
     </table>
 
+    <!-- ═══ Compare Mode ═══ -->
     <h2 id="compare">Compare Mode</h2>
     <p>
       Switch the <strong>Mode</strong> dropdown to <strong>Compare</strong> to view two days
-      side-by-side on the same floor plan. Choose which days to compare using the two
-      day selectors that appear.
+      side-by-side on the same floor plan. Use the two day selectors that appear to choose
+      which days to compare.
     </p>
     <ul>
-      <li>Desk editing and drag-select are disabled in Compare mode.</li>
+      <li>Desk editing, drag-select, and zoom are disabled in Compare mode.</li>
       <li>Switch back to <strong>Single</strong> to resume editing.</li>
     </ul>
 
+    <!-- ═══ Summary Panel ═══ -->
     <h2 id="summary">Desk Allocation Summary</h2>
     <p>The panel below the Teams legend updates in real time and shows:</p>
     <ul>
       <li><strong>Total</strong> — total desks on the floor.</li>
-      <li><strong>Assigned</strong> — desks with a team for the current day.</li>
-      <li><strong>Free</strong> — desks with no assignment.</li>
-      <li>A colour-coded count badge per team.</li>
+      <li><strong>Assigned</strong> — desks with a team assigned for the current day.</li>
+      <li><strong>Free</strong> — desks with no assignment for the current day.</li>
+      <li>A colour-coded count badge for each team.</li>
     </ul>
 
+    <!-- ═══ Keyboard Shortcuts ═══ -->
     <h2 id="shortcuts">Keyboard Shortcuts</h2>
     <table class="key-table">
       <tr>
@@ -431,6 +476,10 @@
         <td>Add or remove a single desk from the current selection.</td>
       </tr>
       <tr>
+        <td>Scroll wheel over floor plan</td>
+        <td>Zoom in or out, centred on the cursor position.</td>
+      </tr>
+      <tr>
         <td><kbd>Enter</kbd> &nbsp;<span style="color:#aab;font-size:12px;">in team editor</span></td>
         <td>Save the team rename.</td>
       </tr>
@@ -440,35 +489,46 @@
       </tr>
     </table>
 
+    <!-- ═══ Import & Export ═══ -->
     <h2 id="import-export">Import &amp; Export</h2>
-
-    <p><strong>Teams CSV format</strong></p>
-    <p>Two columns with a header row. The ID must be <code>T</code> followed by a number.</p>
-    <div class="csv-block">id,name<br>T1,Finance<br>T2,Engineering<br>T3,HR</div>
 
     <p><strong>Desk plan CSV format</strong></p>
     <p>
-      Generated by <span class="btn-pill">&#8595; Export</span>. One row per desk with team IDs
-      for each day, plus team names as additional columns. Re-importable via
-      <span class="btn-pill">&#128194; Import</span>.
+      Generated by <span class="btn-pill">&#8595; Export</span> and re-importable via
+      <span class="btn-pill">&#128194; Import</span>. The file has two sections:
     </p>
-    <div class="csv-block">desk,mon,tue,wed,thu,fri,mon_name,tue_name,wed_name,thu_name,fri_name<br>
-desk-001,T1,T1,T2,,T1,Finance,Finance,Engineering,,Finance<br>
-desk-002,T3,,,T3,,HR,,,HR,</div>
-
+    <div class="csv-block">
+      #teams<br>
+      id,name<br>
+      T1,Finance<br>
+      T2,Engineering<br>
+      T3,HR<br>
+      #data<br>
+      desk,mon,tue,wed,thu,fri,mon_name,tue_name,wed_name,thu_name,fri_name<br>
+      desk-001,T1,T1,T2,,T1,Finance,Finance,Engineering,,Finance<br>
+      desk-002,T3,,,T3,,HR,,,HR,
+    </div>
+    <ul>
+      <li>The <code>#teams</code> section always contains the <strong>full team list</strong>, including teams with no desk assignments. This ensures all teams are restored on re-import.</li>
+      <li>The <code>#data</code> section contains one row per desk with team IDs for each day, plus team names as additional columns for readability in Excel.</li>
+    </ul>
     <div class="tip">
-      <strong>Tip:</strong> The exported CSV includes team names alongside IDs, making it
-      readable in Excel without needing to open the planner.
+      <strong>Tip:</strong> Because the full team list is always exported, you can use a
+      previous export as your starting point the following week — all teams will be restored
+      even if some had no desks assigned.
     </div>
 
+    <!-- ═══ Tips ═══ -->
     <h2 id="tips">Tips &amp; Best Practices</h2>
     <ul>
-      <li>Use <kbd>Shift</kbd>+drag for large zones, then <kbd>Ctrl</kbd>+click to fine-tune.</li>
+      <li>Zoom in first when selecting desks in dense areas — scroll wheel zooms to wherever your cursor is.</li>
+      <li>Use <kbd>Shift</kbd>+drag for large zones, then <kbd>Ctrl</kbd>+click to fine-tune individual desks.</li>
       <li>Use <strong>Copy Day</strong> to roll Monday's plan across the week, then adjust individual days.</li>
       <li>Use <strong>Compare</strong> mode to review differences between two days before finalising.</li>
-      <li>Keep team IDs consistent across floors — they share the same colour scheme.</li>
-      <li>Use <strong>Delete, Keep Colours</strong> when retiring a team mid-week so the floor plan stays readable while you reassign desks.</li>
-      <li>Export regularly — the browser auto-save is convenient but a CSV backup lets you restore from any device.</li>
+      <li>Each floor saves independently — remember to <strong>Export</strong> each floor you work on if you want a portable backup.</li>
+      <li>Use <strong>Delete, Keep Colours</strong> when retiring a team mid-week — the floor plan stays readable while you reassign desks gradually.</li>
+      <li>Team IDs (T1, T2&hellip;) never change, so colours stay consistent across exports, re-imports, and floor switches.</li>
+      <li>Export regularly — the browser auto-save is convenient but a CSV backup lets you restore from any device or browser.</li>
     </ul>
 
   </main>
