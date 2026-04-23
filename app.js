@@ -37,7 +37,13 @@ import {
   registerDesk,
 } from "./state.js";
 
-import { render, applyHighlight, setTeamClickHandler, setTeamEditHandler } from "./render.js";
+import { render as _render, applyHighlight, setTeamClickHandler, setTeamEditHandler } from "./render.js";
+
+// Wrap render so summary visibility is reapplied every time the summary is rebuilt
+function render() {
+  _render();
+  applySummaryVisibility();
+}
 
 import {
   loadSVG,
@@ -443,10 +449,9 @@ function initZoomForFloor() {
  * If loadState didn't restore a label, fall back to the floor config.
  */
 function applyFloorConfig(floor) {
-  // loadState may have already set AppState.categoryLabel from localStorage —
-  // only use the buildings.json default if nothing was saved
   if (!AppState.categoryLabel) AppState.categoryLabel = floor.categoryLabel;
   updateCategoryUI();
+  applySummaryVisibility();
 }
 
 function updateCategoryUI() {
@@ -579,6 +584,8 @@ bind("btn-export-image",  "click", () => {
   exportImage(floor.plan, floorTitle());
 });
 
+bind("btn-toggle-summary", "click", toggleSummary);
+
 bind("btn-copy",          "click", openCopyModal);
 bind("btn-undo",          "click", () => { if (undo()) render(); });
 bind("btn-clear-desks",   "click", handleClearDesks);
@@ -652,6 +659,34 @@ function applyCopy() {
 
 function closeCopyModal() {
   elCopyModal.style.display = "none";
+}
+
+// ── Summary show/hide ─────────────────────────────────────────────────────────
+
+function summaryStorageKey() {
+  // Per-floor preference stored separately from desk data
+  return `deskPlannerSummary_${storageKey()}`;
+}
+
+function isSummaryVisible() {
+  // Default is visible (null = never set)
+  return localStorage.getItem(summaryStorageKey()) !== "hidden";
+}
+
+function applySummaryVisibility() {
+  const visible = isSummaryVisible();
+  const el      = document.getElementById("summary");
+  const btn     = document.getElementById("btn-toggle-summary");
+  if (!el || !btn) return;
+  el.classList.toggle("summary-hidden", !visible);
+  btn.textContent = visible ? "▲ Hide" : "▼ Show";
+  btn.title       = visible ? "Hide summary" : "Show summary";
+}
+
+function toggleSummary() {
+  const nowVisible = !isSummaryVisible();
+  localStorage.setItem(summaryStorageKey(), nowVisible ? "visible" : "hidden");
+  applySummaryVisibility();
 }
 
 

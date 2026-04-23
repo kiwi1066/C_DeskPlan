@@ -433,9 +433,42 @@ button[data-active="true"] { background: var(--accent); }
 
 /* ── Summary panel ───────────────────────────────────────────── */
 .summary-wrap {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--border);
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.summary-toggle-btn {
+  all: unset;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+.summary-toggle-btn:hover {
+  background: var(--brand-light);
+  color: var(--brand-dark);
+}
+
+#summary {
+  transition: opacity 0.2s;
+}
+
+#summary.summary-hidden {
+  display: none;
 }
 
 .summary-totals {
