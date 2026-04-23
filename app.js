@@ -325,10 +325,15 @@ function switchFloor(buildingId, floorId) {
 
   loadSVG("svgContainer", floor.plan, () => {
     AppState.deskSelector = floor.deskSelector;
+    AppState.itemPrefix   = floor.itemPrefix;
     document.querySelectorAll(`#svgContainer ${floor.deskSelector}`).forEach(el => {
       registerDesk(el.id);
     });
     loadState();
+
+    // Apply category label — loaded state takes priority, then buildings.json default
+    applyFloorConfig(floor);
+
     const freshSvg = setupDeskClicks(floor.deskSelector);
     if (freshSvg) initDragSelect(freshSvg, floor.deskSelector);
 
@@ -375,10 +380,15 @@ async function boot() {
 
     loadSVG("svgContainer", floor.plan, () => {
       AppState.deskSelector = floor.deskSelector;
+      AppState.itemPrefix   = floor.itemPrefix;
       document.querySelectorAll(`#svgContainer ${floor.deskSelector}`).forEach(el => {
         registerDesk(el.id);
       });
       loadState();
+
+      // Apply category label — loaded state takes priority, then buildings.json default
+      applyFloorConfig(floor);
+
       const freshSvg = setupDeskClicks(floor.deskSelector);
       if (freshSvg) initDragSelect(freshSvg, floor.deskSelector);
 
@@ -425,6 +435,69 @@ function initZoomForFloor() {
     img.addEventListener("load", setup, { once: true });
   }
 }
+
+// ── Category label ────────────────────────────────────────────────────────────
+
+/**
+ * Called after loadState() so saved label takes priority over buildings.json default.
+ * If loadState didn't restore a label, fall back to the floor config.
+ */
+function applyFloorConfig(floor) {
+  // loadState may have already set AppState.categoryLabel from localStorage —
+  // only use the buildings.json default if nothing was saved
+  if (!AppState.categoryLabel) AppState.categoryLabel = floor.categoryLabel;
+  updateCategoryUI();
+}
+
+function updateCategoryUI() {
+  const label = AppState.categoryLabel || "Teams";
+
+  // Update section header text
+  document.getElementById("categoryLabel").textContent = label;
+
+  // Keep the hidden input in sync
+  document.getElementById("categoryInput").value = label;
+
+  // Update the Add button label — strip trailing 's' for singular
+  // e.g. "Teams" → "Add Team", "Port Types" → "Add Port Type"
+  const singular = label.replace(/s$/i, "");
+  document.getElementById("btn-add-team").textContent = `➕ Add ${singular}`;
+}
+
+function openCategoryEdit() {
+  document.getElementById("categoryEditWrap").style.display     = "flex";
+  document.getElementById("categoryHeaderWrap").style.display   = "none";
+  const input = document.getElementById("categoryInput");
+  input.value = AppState.categoryLabel || "Teams";
+  input.focus();
+  input.select();
+}
+
+function saveCategoryLabel() {
+  const val = document.getElementById("categoryInput").value.trim();
+  if (val) {
+    AppState.categoryLabel = val;
+    saveState();
+    updateCategoryUI();
+    render();
+  }
+  closeCategoryEdit();
+}
+
+function closeCategoryEdit() {
+  document.getElementById("categoryEditWrap").style.display   = "none";
+  document.getElementById("categoryHeaderWrap").style.display = "flex";
+}
+
+// Bind category label interactions
+document.getElementById("categoryLabel").addEventListener("click",      openCategoryEdit);
+document.getElementById("btn-edit-category").addEventListener("click",  openCategoryEdit);
+document.getElementById("btn-category-save").addEventListener("click",  saveCategoryLabel);
+document.getElementById("btn-category-cancel").addEventListener("click", closeCategoryEdit);
+document.getElementById("categoryInput").addEventListener("keydown", e => {
+  if (e.key === "Enter")  saveCategoryLabel();
+  if (e.key === "Escape") closeCategoryEdit();
+});
 
 function setupDeskClicks(deskSelector) {
   const svgEl = document.querySelector("#svgContainer svg");

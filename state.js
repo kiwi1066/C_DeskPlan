@@ -27,8 +27,10 @@ export const AppState = {
   multiMode:     false,
   currentDay:    "mon",
   currentDay2:   "tue",
-  mode:          "single", // "single" | "compare"
-  deskSelector:  "g[id^='desk']",  // updated per floor on load
+  mode:          "single",       // "single" | "compare"
+  deskSelector:  "g[id^='desk']",
+  categoryLabel: "Teams",        // editable section header — saved per floor
+  itemPrefix:    "T",            // from buildings.json — drives IDs and colour mapping
 };
 
 // ── Desk registration ────────────────────────────────────────────────────────
@@ -78,18 +80,20 @@ export function removeAllTeams() {
 }
 
 export function getSortedTeamIds() {
+  const prefix = AppState.itemPrefix || "T";
   return Object.keys(AppState.teamNames).sort(
-    (a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1))
+    (a, b) => parseInt(a.replace(prefix, "")) - parseInt(b.replace(prefix, ""))
   );
 }
 
 export function nextTeamId() {
+  const prefix   = AppState.itemPrefix || "T";
   const existing = Object.keys(AppState.teamNames)
-    .map(t => parseInt(t.replace("T", "")))
+    .map(t => parseInt(t.replace(prefix, "")))
     .filter(n => !isNaN(n));
   let n = 1;
   while (existing.includes(n)) n++;
-  return "T" + n;
+  return prefix + n;
 }
 
 // ── Team colour ──────────────────────────────────────────────────────────────
@@ -97,8 +101,9 @@ export function nextTeamId() {
 
 export function teamColor(teamId) {
   if (!teamId) return "transparent";
-  const num = parseInt(teamId.replace("T", "")) || 0;
-  const hue = (num * 47) % 360;
+  const prefix = AppState.itemPrefix || "T";
+  const num    = parseInt(teamId.replace(prefix, "")) || 0;
+  const hue    = (num * 47) % 360;
   return `hsl(${hue}, 65%, 50%)`;
 }
 
@@ -178,8 +183,9 @@ export function undo() {
 export function saveState() {
   try {
     localStorage.setItem(_storageKey, JSON.stringify({
-      deskData:  AppState.deskData,
-      teamNames: AppState.teamNames,
+      deskData:      AppState.deskData,
+      teamNames:     AppState.teamNames,
+      categoryLabel: AppState.categoryLabel,
     }));
   } catch (e) {
     console.warn("Could not save state:", e);
@@ -195,7 +201,6 @@ export function loadState() {
     const savedDesks = saved.deskData || saved;
     const savedTeams = saved.teamNames || {};
 
-    // Merge saved assignments into already-registered desks.
     Object.keys(savedDesks).forEach(id => {
       if (AppState.deskData[id]) {
         AppState.deskData[id] = savedDesks[id];
@@ -203,6 +208,9 @@ export function loadState() {
     });
 
     AppState.teamNames = savedTeams;
+
+    // Restore user-edited category label if present
+    if (saved.categoryLabel) AppState.categoryLabel = saved.categoryLabel;
   } catch (e) {
     console.warn("Could not load state:", e);
   }
@@ -232,6 +240,8 @@ export function resetFloorData() {
   AppState.mode          = "single";
   AppState.currentDay    = "mon";
   AppState.deskSelector  = "g[id^='desk']";
+  AppState.categoryLabel = "Teams";
+  AppState.itemPrefix    = "T";
 }
 
 // ── Summary helpers ───────────────────────────────────────────────────────────

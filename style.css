@@ -204,6 +204,81 @@ button.btn-danger:hover { background: #b02a37; }
 /* Variant — success / active state for multi */
 button[data-active="true"] { background: var(--accent); }
 
+/* ── Editable category label ─────────────────────────────────── */
+.category-header-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 6px;
+}
+
+.category-label-text {
+  margin: 0;
+  cursor: pointer;
+}
+
+.category-label-text:hover {
+  color: var(--brand-mid);
+}
+
+.category-edit-btn {
+  all: unset;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  line-height: 1;
+}
+
+.category-header-wrap:hover .category-edit-btn {
+  opacity: 1;
+}
+
+.category-edit-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.category-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 2px solid var(--brand-mid);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  outline: none;
+  background: var(--surface);
+}
+
+.category-save-btn,
+.category-cancel-btn {
+  all: unset;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s;
+}
+
+.category-save-btn {
+  color: var(--accent);
+}
+.category-save-btn:hover   { background: #e6f4ea; }
+
+.category-cancel-btn {
+  color: var(--danger);
+}
+.category-cancel-btn:hover { background: #fdecea; }
+
 /* ── Teams section ───────────────────────────────────────────── */
 .section-header {
   font-size: 12px;

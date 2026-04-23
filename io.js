@@ -53,8 +53,10 @@ export function loadSVG(containerId, svgFile, callback) {
 function buildCSV(teamIds) {
   const dayKeys = DAYS.map(d => d.key);
 
-  // Section 1: teams manifest
-  let csv = "#teams\nid,name\n";
+  // Section 1: teams manifest — label reflects current category name
+  const catLabel = AppState.categoryLabel || "Teams";
+  let csv = `#teams\nid,name\n`;
+  csv += `#category,${catLabel}\n`;
   teamIds.forEach(id => {
     csv += `${id},${AppState.teamNames[id]}\n`;
   });
@@ -128,6 +130,12 @@ export function handleDeskImport(file) {
         if (skipNext) { skipNext = false; return; }
 
         if (section === "teams") {
+          // Special metadata row — restore category label
+          if (line.startsWith("#category,")) {
+            const restoredLabel = line.slice("#category,".length).trim();
+            if (restoredLabel) AppState.categoryLabel = restoredLabel;
+            return;
+          }
           const parts = line.split(",");
           if (parts.length < 2) return;
           const id   = parts[0].trim();
