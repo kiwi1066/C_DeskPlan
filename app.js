@@ -333,7 +333,6 @@ function switchFloor(buildingId, floorId) {
 
   loadSVG("svgContainer", floor.plan, () => {
     AppState.deskSelector = floor.deskSelector;
-    AppState.itemPrefix   = floor.itemPrefix;
     document.querySelectorAll(`#svgContainer ${floor.deskSelector}`).forEach(el => {
       registerDesk(el.id);
     });
@@ -388,7 +387,6 @@ async function boot() {
 
     loadSVG("svgContainer", floor.plan, () => {
       AppState.deskSelector = floor.deskSelector;
-      AppState.itemPrefix   = floor.itemPrefix;
       document.querySelectorAll(`#svgContainer ${floor.deskSelector}`).forEach(el => {
         registerDesk(el.id);
       });

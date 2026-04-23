@@ -22,15 +22,14 @@ export function setStorageKey(key) { _storageKey = key; }
 export const AppState = {
   deskData:      {},   // { "desk-001": { mon:"T1", tue:"", ... }, ... }
   teamNames:     {},   // { "T1": "Finance", "T2": "HR", ... }
-  selectedDesks: [],   // ["desk-001", "desk-003"]
-  history:       [],   // snapshots of deskData for undo
+  selectedDesks: [],
+  history:       [],
   multiMode:     false,
   currentDay:    "mon",
   currentDay2:   "tue",
-  mode:          "single",       // "single" | "compare"
+  mode:          "single",
   deskSelector:  "g[id^='desk']",
-  categoryLabel: "Teams",        // editable section header — saved per floor
-  itemPrefix:    "T",            // from buildings.json — drives IDs and colour mapping
+  categoryLabel: "Teams",
 };
 
 // ── Desk registration ────────────────────────────────────────────────────────
@@ -80,20 +79,18 @@ export function removeAllTeams() {
 }
 
 export function getSortedTeamIds() {
-  const prefix = AppState.itemPrefix || "T";
   return Object.keys(AppState.teamNames).sort(
-    (a, b) => parseInt(a.replace(prefix, "")) - parseInt(b.replace(prefix, ""))
+    (a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1))
   );
 }
 
 export function nextTeamId() {
-  const prefix   = AppState.itemPrefix || "T";
   const existing = Object.keys(AppState.teamNames)
-    .map(t => parseInt(t.replace(prefix, "")))
+    .map(t => parseInt(t.replace("T", "")))
     .filter(n => !isNaN(n));
   let n = 1;
   while (existing.includes(n)) n++;
-  return prefix + n;
+  return "T" + n;
 }
 
 // ── Team colour ──────────────────────────────────────────────────────────────
@@ -101,9 +98,8 @@ export function nextTeamId() {
 
 export function teamColor(teamId) {
   if (!teamId) return "transparent";
-  const prefix = AppState.itemPrefix || "T";
-  const num    = parseInt(teamId.replace(prefix, "")) || 0;
-  const hue    = (num * 47) % 360;
+  const num = parseInt(teamId.replace("T", "")) || 0;
+  const hue = (num * 47) % 360;
   return `hsl(${hue}, 65%, 50%)`;
 }
 
@@ -241,7 +237,6 @@ export function resetFloorData() {
   AppState.currentDay    = "mon";
   AppState.deskSelector  = "g[id^='desk']";
   AppState.categoryLabel = "Teams";
-  AppState.itemPrefix    = "T";
 }
 
 // ── Summary helpers ───────────────────────────────────────────────────────────

@@ -53,7 +53,6 @@ export function getCurrentFloor() {
     plan:          floor?.plan          ?? null,
     deskSelector:  floor?.deskSelector  ?? "g[id^='desk']",
     categoryLabel: floor?.categoryLabel ?? "Teams",
-    itemPrefix:    floor?.itemPrefix    ?? "T",
   };
 }
 
