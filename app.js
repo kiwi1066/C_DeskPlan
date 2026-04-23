@@ -43,8 +43,6 @@ import {
   loadSVG,
   triggerImport,
   handleDeskImport,
-  triggerTeamImport,
-  handleTeamImport,
   exportCSV,
   exportImage,
 } from "./io.js";
@@ -94,7 +92,6 @@ const elDay2          = document.getElementById("day2");
 const elCopyModal     = document.getElementById("copyModal");
 const elCopyDays      = document.getElementById("copyDays");
 const elFileInput     = document.getElementById("fileInput");
-const elTeamFileInput = document.getElementById("teamFileInput");
 const elFloorLoading  = document.getElementById("floorLoading");
 const elFloorLoadingLabel = document.getElementById("floorLoadingLabel");
 const elAppTitle      = document.getElementById("appTitle");
@@ -531,11 +528,6 @@ elFileInput.addEventListener("change", e => {
   if (file) { handleDeskImport(file); elFileInput.value = ""; }
 });
 
-elTeamFileInput.addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (file) { handleTeamImport(file, _teamImportMode); elTeamFileInput.value = ""; }
-});
-
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
 function toggleMultiMode() {
@@ -587,29 +579,4 @@ function closeCopyModal() {
   elCopyModal.style.display = "none";
 }
 
-// ── Team import modal ─────────────────────────────────────────────────────────
 
-const elTeamImportModal = document.getElementById("teamImportModal");
-let _teamImportMode = "replace";
-
-function openTeamImportModal() {
-  elTeamImportModal.style.display = "block";
-}
-
-function closeTeamImportModal() {
-  elTeamImportModal.style.display = "none";
-}
-
-document.getElementById("btn-import-replace").addEventListener("click", () => {
-  _teamImportMode = "replace";
-  closeTeamImportModal();
-  triggerTeamImport();
-});
-
-document.getElementById("btn-import-merge").addEventListener("click", () => {
-  _teamImportMode = "merge";
-  closeTeamImportModal();
-  triggerTeamImport();
-});
-
-document.getElementById("btn-import-teams-cancel").addEventListener("click", closeTeamImportModal);

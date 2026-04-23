@@ -48,7 +48,7 @@
     <div id="editControls">
       <div class="toolbar-section">
         <span class="toolbar-label">File</span>
-        <button id="btn-import-teams">👥 Import Teams</button>
+        <button id="btn-add-team">➕ Add Team</button>
         <button id="btn-import">📂 Import</button>
         <button id="btn-export">⬇ Export</button>
         <button id="btn-export-image">📸 Export Image</button>
@@ -57,14 +57,12 @@
         <span class="toolbar-label">Edit</span>
         <button id="btn-copy">📋 Copy Day</button>
         <button id="btn-undo">↩ Undo</button>
+        <button id="btn-multi">🧩 Multi</button>
         <button id="btn-clear-desks">🧽 Clear Desks</button>
         <button id="btn-clear-all">🧹 Clear All</button>
         <button id="btn-reset" class="btn-danger">🗑 Reset</button>
       </div>
-      <div class="toolbar-section">
-        <span class="toolbar-label">Select</span>
-        <button id="btn-multi">🧩 Multi</button>
-        <button id="btn-add-team">➕ Add Team</button>
+      <div class="toolbar-section" style="border-top:none;padding-top:0;">
         <button id="btn-help">❓ Help</button>
       </div>
 
@@ -85,25 +83,6 @@
     <div class="modal-actions">
       <button id="btn-apply-copy">Apply</button>
       <button id="btn-cancel-copy" class="btn-danger">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Team import mode modal -->
-  <div id="teamImportModal" role="dialog" aria-modal="true">
-    <h3>Import Teams</h3>
-    <p class="modal-desc">How would you like to import the team list?</p>
-    <div class="import-options">
-      <button id="btn-import-replace" class="import-option">
-        <span class="import-option-title">Replace</span>
-        <span class="import-option-desc">Clears all existing teams and loads the new list. Use this to start fresh from a master list.</span>
-      </button>
-      <button id="btn-import-merge" class="import-option">
-        <span class="import-option-title">Merge</span>
-        <span class="import-option-desc">Adds new teams without removing existing ones or affecting desk assignments.</span>
-      </button>
-    </div>
-    <div class="modal-actions" style="margin-top:14px;">
-      <button id="btn-import-teams-cancel" class="btn-secondary">Cancel</button>
     </div>
   </div>
 
@@ -183,8 +162,7 @@
     </div>
   </div>
 
-  <input type="file" id="fileInput"     accept=".csv" style="display:none" aria-hidden="true">
-  <input type="file" id="teamFileInput" accept=".csv" style="display:none" aria-hidden="true">
+  <input type="file" id="fileInput" accept=".csv" style="display:none" aria-hidden="true">
 
   <script type="module" src="app.js"></script>
 </body>
