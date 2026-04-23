@@ -59,6 +59,14 @@ import {
 import { initDragSelect, destroyDragSelect } from "./dragSelect.js";
 
 import {
+  initZoom,
+  resetZoom,
+  destroyZoom,
+  zoomIn,
+  zoomOut,
+} from "./zoom.js";
+
+import {
   loadBuildings,
   getBuildings,
   getFloors,
@@ -325,6 +333,10 @@ function switchFloor(buildingId, floorId) {
     loadState();
     const freshSvg = setupDeskClicks(floor.deskSelector);
     if (freshSvg) initDragSelect(freshSvg, floor.deskSelector);
+
+    // Reset zoom for new floor then reinit
+    initZoomForFloor();
+
     render();
     hideLoading();
   });
@@ -371,6 +383,10 @@ async function boot() {
       loadState();
       const freshSvg = setupDeskClicks(floor.deskSelector);
       if (freshSvg) initDragSelect(freshSvg, floor.deskSelector);
+
+      // Initialise zoom — viewport clips, mapBox scales
+      initZoomForFloor();
+
       render();
       hideLoading();
     });
@@ -391,7 +407,26 @@ async function boot() {
 
 boot();
 
-// ── Desk click handling ───────────────────────────────────────────────────────
+/** Sets the map viewport height to match the natural mapBox height, then inits zoom */
+function initZoomForFloor() {
+  const viewport = document.getElementById("mapViewport");
+  const mapBox   = document.getElementById("mapSingle");
+  const img      = document.getElementById("floorPlanImg");
+  if (!viewport || !mapBox) return;
+
+  const setup = () => {
+    viewport.style.height = mapBox.offsetHeight + "px";
+    destroyZoom();
+    initZoom(viewport, mapBox);
+  };
+
+  // If image already loaded (cached) use current size, else wait for load
+  if (img && img.complete && img.naturalHeight > 0) {
+    setup();
+  } else if (img) {
+    img.addEventListener("load", setup, { once: true });
+  }
+}
 
 function setupDeskClicks(deskSelector) {
   const svgEl = document.querySelector("#svgContainer svg");
@@ -426,13 +461,23 @@ function setupDeskClicks(deskSelector) {
 
 elMode.addEventListener("change", () => {
   AppState.mode = elMode.value;
+  const zoomControls = document.getElementById("zoomControls");
+  const mapViewport  = document.getElementById("mapViewport");
+
   if (AppState.mode === "compare") {
     destroyDragSelect();
+    destroyZoom();
+    if (zoomControls) zoomControls.style.display = "none";
+    if (mapViewport)  mapViewport.style.display  = "none";
     activateCompare(getCurrentFloor().plan);
   } else {
     deactivateCompare();
+    if (zoomControls) zoomControls.style.display = "flex";
+    if (mapViewport)  mapViewport.style.display  = "block";
     const freshSvg = setupDeskClicks(AppState.deskSelector);
     if (freshSvg) initDragSelect(freshSvg, AppState.deskSelector);
+    // Reinit zoom on the restored single view
+    initZoomForFloor();
     render();
   }
 });
@@ -452,7 +497,9 @@ elDay2.addEventListener("change", () => {
 
 // ── Toolbar buttons ───────────────────────────────────────────────────────────
 
-bind("btn-import-teams",  "click", triggerTeamImport);
+bind("btn-zoom-in",    "click", zoomIn);
+bind("btn-zoom-out",   "click", zoomOut);
+bind("btn-zoom-reset", "click", resetZoom);
 bind("btn-import",        "click", triggerImport);
 bind("btn-export",        "click", exportCSV);
 bind("btn-export-image",  "click", () => {
@@ -486,7 +533,7 @@ elFileInput.addEventListener("change", e => {
 
 elTeamFileInput.addEventListener("change", e => {
   const file = e.target.files[0];
-  if (file) { handleTeamImport(file); elTeamFileInput.value = ""; }
+  if (file) { handleTeamImport(file, _teamImportMode); elTeamFileInput.value = ""; }
 });
 
 // ── Handlers ─────────────────────────────────────────────────────────────────
@@ -539,3 +586,30 @@ function applyCopy() {
 function closeCopyModal() {
   elCopyModal.style.display = "none";
 }
+
+// ── Team import modal ─────────────────────────────────────────────────────────
+
+const elTeamImportModal = document.getElementById("teamImportModal");
+let _teamImportMode = "replace";
+
+function openTeamImportModal() {
+  elTeamImportModal.style.display = "block";
+}
+
+function closeTeamImportModal() {
+  elTeamImportModal.style.display = "none";
+}
+
+document.getElementById("btn-import-replace").addEventListener("click", () => {
+  _teamImportMode = "replace";
+  closeTeamImportModal();
+  triggerTeamImport();
+});
+
+document.getElementById("btn-import-merge").addEventListener("click", () => {
+  _teamImportMode = "merge";
+  closeTeamImportModal();
+  triggerTeamImport();
+});
+
+document.getElementById("btn-import-teams-cancel").addEventListener("click", closeTeamImportModal);

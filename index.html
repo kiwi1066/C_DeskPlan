@@ -88,6 +88,25 @@
     </div>
   </div>
 
+  <!-- Team import mode modal -->
+  <div id="teamImportModal" role="dialog" aria-modal="true">
+    <h3>Import Teams</h3>
+    <p class="modal-desc">How would you like to import the team list?</p>
+    <div class="import-options">
+      <button id="btn-import-replace" class="import-option">
+        <span class="import-option-title">Replace</span>
+        <span class="import-option-desc">Clears all existing teams and loads the new list. Use this to start fresh from a master list.</span>
+      </button>
+      <button id="btn-import-merge" class="import-option">
+        <span class="import-option-title">Merge</span>
+        <span class="import-option-desc">Adds new teams without removing existing ones or affecting desk assignments.</span>
+      </button>
+    </div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button id="btn-import-teams-cancel" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+
   <!-- Team edit modal -->
   <div id="teamEditModal" role="dialog" aria-modal="true">
     <div id="teamEditPanel">
@@ -129,10 +148,23 @@
 
   <!-- Map area -->
   <div class="map-area">
-    <div id="mapSingle" class="mapBox">
-      <img id="floorPlanImg" src="" alt="Office floor plan">
-      <div id="svgContainer" class="svgLayer"></div>
+
+    <!-- Zoom controls (single view only) -->
+    <div id="zoomControls" class="zoom-controls">
+      <button id="btn-zoom-in"    class="zoom-btn" title="Zoom in">＋</button>
+      <button id="btn-zoom-out"   class="zoom-btn" title="Zoom out">－</button>
+      <span   id="zoomLabel"      class="zoom-label">100%</span>
+      <button id="btn-zoom-reset" class="zoom-btn zoom-reset" title="Reset zoom" style="display:none">⤢ Fit</button>
     </div>
+
+    <!-- Viewport clips overflow; mapBox scales inside it -->
+    <div id="mapViewport" class="map-viewport">
+      <div id="mapSingle" class="mapBox">
+        <img id="floorPlanImg" src="" alt="Office floor plan">
+        <div id="svgContainer" class="svgLayer"></div>
+      </div>
+    </div>
+
     <div id="compareWrap">
       <div class="compare-panel">
         <div class="compare-label" id="compareLabel1"></div>

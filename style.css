@@ -348,17 +348,73 @@ button[data-active="true"] { background: var(--accent); }
 /* ── Map layout ──────────────────────────────────────────────── */
 .map-area {
   margin: 0 14px 20px;
+  position: relative;
+}
+
+/* Zoom controls bar */
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.zoom-btn:hover {
+  background: var(--brand-light);
+  border-color: var(--brand-mid);
+}
+
+.zoom-reset {
+  width: auto;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-dark);
+}
+
+.zoom-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 38px;
+  text-align: center;
+}
+
+/* Viewport clips the scaled mapBox */
+.map-viewport {
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  /* Height is set by JS to match the natural mapBox height */
+  position: relative;
 }
 
 .mapBox {
   position: relative;
   max-width: 1200px;
+  /* transform applied by zoom.js */
+  will-change: transform;
 }
 
 .mapBox img {
   width: 100%;
   display: block;
-  border-radius: var(--radius-md);
 }
 
 .svgLayer {
@@ -463,6 +519,71 @@ body.drag-selecting,
 body.drag-selecting * {
   cursor: crosshair !important;
   user-select: none;
+}
+
+/* ── Team import modal ───────────────────────────────────────── */
+#teamImportModal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface);
+  padding: 20px 24px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 1001;
+  min-width: 300px;
+  max-width: 380px;
+  border: 1px solid var(--border);
+}
+
+#teamImportModal h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--brand-dark);
+}
+
+.modal-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+
+.import-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.import-option {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: left;
+}
+
+.import-option:hover {
+  border-color: var(--brand-mid);
+  background: var(--brand-light);
+}
+
+.import-option-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-dark);
+}
+
+.import-option-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
 /* ── Location row (Building / Floor) ─────────────────────────── */
