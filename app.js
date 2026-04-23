@@ -39,12 +39,6 @@ import {
 
 import { render as _render, applyHighlight, setTeamClickHandler, setTeamEditHandler } from "./render.js";
 
-// Wrap render so summary visibility is reapplied every time the summary is rebuilt
-function render() {
-  _render();
-  applySummaryVisibility();
-}
-
 import {
   loadSVG,
   triggerImport,
@@ -80,6 +74,14 @@ import {
   storageKey,
   floorTitle,
 } from "./buildings.js";
+
+// ── Render wrapper ────────────────────────────────────────────────────────────
+// Reapplies summary visibility after every render since updateSummary rebuilds the div
+
+function render() {
+  _render();
+  applySummaryVisibility();
+}
 
 // ── Safe event binder ─────────────────────────────────────────────────────────
 
