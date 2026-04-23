@@ -46,6 +46,7 @@ import {
   exportCSVAllTeams,
   exportCSVAssignedTeams,
   exportImage,
+  setRenderCallback,
 } from "./io.js";
 
 import {
@@ -83,6 +84,9 @@ function render() {
   updateCategoryUI();
   applySummaryVisibility();
 }
+
+// Give io.js access to the full wrapped render so imports trigger UI updates
+setRenderCallback(render);
 
 // ── Safe event binder ─────────────────────────────────────────────────────────
 

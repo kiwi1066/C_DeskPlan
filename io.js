@@ -14,7 +14,10 @@ import {
   teamColor,
 } from "./state.js";
 
-import { render } from "./render.js";
+// Render callback — set by app.js so io.js calls the full wrapped render
+let _renderFn = null;
+export function setRenderCallback(fn) { _renderFn = fn; }
+function doRender() { if (_renderFn) _renderFn(); }
 
 // ── SVG loader ────────────────────────────────────────────────────────────────
 
@@ -180,7 +183,7 @@ export function handleDeskImport(file) {
     }
 
     saveState();
-    render();
+    doRender();
   });
 }
 
@@ -215,7 +218,7 @@ export function handleTeamImport(file, mode = "replace") {
     });
 
     saveState();
-    render();
+    doRender();
   });
 }
 
