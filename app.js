@@ -47,6 +47,7 @@ import {
   exportCSVAssignedTeams,
   exportImage,
   setRenderCallback,
+  setPromptCallback,
 } from "./io.js";
 
 import {
@@ -76,6 +77,8 @@ import {
   floorTitle,
 } from "./buildings.js";
 
+import { uiPrompt, uiConfirm } from "./modal.js";
+
 // ── Render wrapper ────────────────────────────────────────────────────────────
 // Keeps category label UI and summary visibility in sync after every render
 
@@ -87,6 +90,9 @@ function render() {
 
 // Give io.js access to the full wrapped render so imports trigger UI updates
 setRenderCallback(render);
+
+// Give io.js access to the styled prompt modal
+setPromptCallback((title, label, defaultVal) => uiPrompt(title, label, defaultVal));
 
 // ── Safe event binder ─────────────────────────────────────────────────────────
 
@@ -593,12 +599,14 @@ bind("btn-toggle-summary", "click", toggleSummary);
 bind("btn-copy",          "click", openCopyModal);
 bind("btn-undo",          "click", () => { if (undo()) render(); });
 bind("btn-clear-desks",   "click", handleClearDesks);
-bind("btn-clear-all",     "click", () => {
-  if (!confirm("Clear all allocations and teams?")) return;
+bind("btn-clear-all",     "click", async () => {
+  const ok = await uiConfirm("Clear All", "This will clear all desk assignments and remove all teams for this floor.", "Clear All", true);
+  if (!ok) return;
   clearAllData(); render();
 });
-bind("btn-reset",         "click", () => {
-  if (!confirm("Reset everything? All data for this floor will be lost.")) return;
+bind("btn-reset",         "click", async () => {
+  const ok = await uiConfirm("Reset Floor", "All data for this floor will be permanently lost.", "Reset", true);
+  if (!ok) return;
   resetAll();
 });
 bind("btn-multi",         "click", toggleMultiMode);
@@ -623,17 +631,25 @@ function toggleMultiMode() {
   btn.classList.toggle("btn-active", AppState.multiMode);
 }
 
-function handleAddTeam() {
+async function handleAddTeam() {
   const id   = nextTeamId();
-  const name = prompt("Enter name for " + id + ":");
+  const name = await uiPrompt(`Add ${(AppState.categoryLabel || "Teams").replace(/s$/i, "")}`, "Name", "", "Add");
   if (!name?.trim()) return;
   addTeam(id, name.trim());
   saveState();
   render();
 }
 
-function handleClearDesks() {
-  if (!confirm("Clear desk allocations?")) return;
+async function handleClearDesks() {
+  const ok = await uiConfirm(
+    "Clear Desks",
+    AppState.selectedDesks.length
+      ? `Clear ${AppState.selectedDesks.length} selected desk${AppState.selectedDesks.length > 1 ? "s" : ""} for ${(DAYS.find(d => d.key === AppState.currentDay) || {}).label || "this day"}?`
+      : `Clear all desk assignments for ${(DAYS.find(d => d.key === AppState.currentDay) || {}).label || "this day"}?`,
+    "Clear",
+    true
+  );
+  if (!ok) return;
   if (AppState.selectedDesks.length) {
     clearDeskDay(AppState.selectedDesks, AppState.currentDay);
   } else {

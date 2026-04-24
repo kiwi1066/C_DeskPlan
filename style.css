@@ -622,6 +622,77 @@ button[data-active="true"] { background: var(--accent); }
 }
 
 /* ── Copy modal ──────────────────────────────────────────────── */
+/* ── Shared modal backdrop ───────────────────────────────────── */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 1050;
+}
+.modal-backdrop.active { display: block; }
+
+/* ── uiPrompt / uiConfirm shared styles ─────────────────────── */
+.ui-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface);
+  padding: 24px 26px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 1100;
+  min-width: 300px;
+  max-width: 420px;
+  width: 90%;
+  border: 1px solid var(--border);
+}
+
+.ui-modal-title {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--brand-dark);
+}
+
+.ui-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.ui-modal-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.ui-modal-input {
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+.ui-modal-input:focus {
+  border-color: var(--brand-mid);
+}
+
+.ui-modal-msg {
+  margin: 0 0 18px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
 #copyModal {
   display: none;
   position: fixed;

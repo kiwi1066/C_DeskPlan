@@ -100,6 +100,32 @@
     </div>
   </div>
 
+  <!-- Shared modal backdrop -->
+  <div id="modalBackdrop" class="modal-backdrop"></div>
+
+  <!-- uiPrompt modal — replaces browser prompt() -->
+  <div id="uiPromptModal" class="ui-modal" role="dialog" aria-modal="true" style="display:none">
+    <h3 id="uiPromptTitle" class="ui-modal-title"></h3>
+    <div class="ui-modal-body">
+      <label id="uiPromptLabel" class="ui-modal-label"></label>
+      <input id="uiPromptInput" type="text" class="ui-modal-input" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="modal-actions">
+      <button id="uiPromptConfirm">OK</button>
+      <button id="uiPromptCancel" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+
+  <!-- uiConfirm modal — replaces browser confirm() -->
+  <div id="uiConfirmModal" class="ui-modal" role="dialog" aria-modal="true" style="display:none">
+    <h3 id="uiConfirmTitle" class="ui-modal-title"></h3>
+    <p  id="uiConfirmMsg"   class="ui-modal-msg"></p>
+    <div class="modal-actions">
+      <button id="uiConfirmConfirm">OK</button>
+      <button id="uiConfirmCancel" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+
   <!-- Copy modal -->
   <div id="copyModal" role="dialog" aria-modal="true">
     <h3>Copy Day To…</h3>

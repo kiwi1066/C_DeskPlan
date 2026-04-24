@@ -80,20 +80,25 @@ function buildCSV(teamIds) {
   return csv;
 }
 
-function promptAndDownload(csv) {
-  const fileName = prompt("Enter file name:", "desk-data");
+// Prompt callback — set by app.js so io.js uses the styled modal
+let _promptFn = null;
+export function setPromptCallback(fn) { _promptFn = fn; }
+
+async function promptAndDownload(csv) {
+  if (!_promptFn) { console.warn("No prompt callback set"); return; }
+  const fileName = await _promptFn("Export", "File name", "desk-data");
   if (!fileName) return;
   downloadText(csv, fileName.replace(/\.csv$/i, "") + ".csv");
 }
 
 /** Export all teams — including those with no desks assigned */
-export function exportCSVAllTeams() {
+export async function exportCSVAllTeams() {
   const teamIds = getSortedTeamIds();
-  promptAndDownload(buildCSV(teamIds));
+  await promptAndDownload(buildCSV(teamIds));
 }
 
 /** Export only teams that have at least one desk assigned on any day */
-export function exportCSVAssignedTeams() {
+export async function exportCSVAssignedTeams() {
   const assignedIds = new Set();
   DAYS.forEach(({ key }) => {
     Object.values(AppState.deskData).forEach(v => {
@@ -101,7 +106,7 @@ export function exportCSVAssignedTeams() {
     });
   });
   const teamIds = getSortedTeamIds().filter(id => assignedIds.has(id));
-  promptAndDownload(buildCSV(teamIds));
+  await promptAndDownload(buildCSV(teamIds));
 }
 
 // ── CSV — Desk data import ────────────────────────────────────────────────────
