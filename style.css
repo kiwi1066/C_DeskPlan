@@ -513,6 +513,16 @@ button[data-active="true"] { background: var(--accent); }
   font-weight: 600;
 }
 
+/* ── Desk hover outline (50% of selected style) ──────────────── */
+#svgContainer g[id^='desk']:hover rect,
+#svgContainer g[id^='desk']:hover polygon,
+#svgContainer g[id^='desk']:hover path {
+  stroke: #555;
+  stroke-width: 1.8;
+  stroke-opacity: 0.5;
+  cursor: pointer;
+}
+
 /* ── Map layout ──────────────────────────────────────────────── */
 .map-area {
   margin: 0 14px 20px;
@@ -583,6 +593,15 @@ button[data-active="true"] { background: var(--accent); }
 .mapBox img {
   width: 100%;
   display: block;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.mapBox,
+.mapBox img,
+.svgLayer svg {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .svgLayer {

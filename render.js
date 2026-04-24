@@ -90,9 +90,9 @@ export function applyHighlight() {
     if (!shape) return;
 
     const selected = AppState.selectedDesks.includes(deskEl.id);
-    shape.setAttribute("stroke",       selected ? "#000" : "none");
-    shape.setAttribute("stroke-width", selected ? "2.5"  : "0");
-    shape.style.filter  = selected ? "drop-shadow(0 0 3px rgba(0,0,0,0.5))" : "none";
+    shape.setAttribute("stroke",       selected ? "#555" : "none");
+    shape.setAttribute("stroke-width", selected ? "1.8"  : "0");
+    shape.style.filter  = "none";
     shape.style.opacity = selected ? "1" : "0.85";
   });
 }

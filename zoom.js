@@ -24,7 +24,7 @@ let _tx       = 0;      // translate X (px)
 let _ty       = 0;      // translate Y (px)
 
 const MIN_SCALE = 1;
-const MAX_SCALE = 6;
+const MAX_SCALE = 10;
 const ZOOM_STEP = 0.12; // per wheel tick
 
 // Pan state
