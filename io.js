@@ -233,7 +233,12 @@ export function handleTeamImport(file, mode = "replace") {
  * @param {string} planFile   - PNG filename e.g. from getCurrentFloor().plan (svg, we derive png)
  * @param {string} titleText  - e.g. "1 Williams St — Level 11"
  */
-export function exportImage(planFile, titleText) {
+export async function exportImage(planFile, titleText) {
+  if (!_promptFn) { console.warn("No prompt callback set"); return; }
+  const fileName = await _promptFn("Export Image", "File name", "desk-plan");
+  if (!fileName) return;
+  const finalName = fileName.replace(/\.png$/i, "") + ".png";
+
   // Derive PNG name: strip svg extension, add .png
   // Convention: the PNG shares the same base name as the SVG
   const pngFile = planFile ? planFile.replace(/\.svg$/i, ".png") : "floorPlan.png";
@@ -246,7 +251,7 @@ export function exportImage(planFile, titleText) {
   img.onload = () => {
     const { width, height } = img;
     const bannerH  = 70;
-    const summaryH = 200;
+    const summaryH = 400;
 
     canvas.width  = width;
     canvas.height = height + bannerH + summaryH;
@@ -283,43 +288,47 @@ export function exportImage(planFile, titleText) {
       ctx.drawImage(svgImg, 0, bannerH);
       URL.revokeObjectURL(url);
 
-      // Summary section
+      // Summary section — tripled font size, centred
       const { teamCounts } = getDaySummaryForExport();
       const teamIds   = getSortedTeamIds();
-      let y           = bannerH + height + 40;
+      let y           = bannerH + height + 70;
 
       ctx.fillStyle = "#000";
       ctx.textAlign = "center";
-      ctx.font = "bold 18px Segoe UI";
+      ctx.font = "bold 54px Segoe UI";
       ctx.fillText("Desk Allocation Summary", width / 2, y);
-      y += 30;
+      y += 60;
 
-      ctx.font = "14px Segoe UI";
-      const perRow   = Math.max(1, Math.floor(width / 260));
+      ctx.font = "42px Segoe UI";
+      const perRow   = Math.max(1, Math.floor(width / 600));
       const colWidth = width / perRow;
+      const rowCount = Math.ceil(teamIds.length / perRow);
+      const blockW   = colWidth * perRow;
+      const startX   = (width - blockW) / 2;
 
       teamIds.forEach((t, i) => {
         const col   = i % perRow;
         const row   = Math.floor(i / perRow);
-        const x     = col * colWidth + 20;
-        const lineY = y + row * 26;
+        const text  = `${t} ${AppState.teamNames[t] || ""}: ${teamCounts[t] || 0}`;
+        const cx    = startX + col * colWidth + colWidth / 2;
+        const lineY = y + row * 60;
         const color = teamColor(t);
 
+        // Measure text so dot sits just left of the text
+        const textW = ctx.measureText(text).width;
+        const dotX  = cx - textW / 2 - 28;
+
         ctx.beginPath();
-        ctx.arc(x + 8, lineY - 6, 6, 0, Math.PI * 2);
+        ctx.arc(dotX, lineY - 14, 16, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
 
         ctx.fillStyle = "#000";
-        ctx.textAlign = "left";
-        ctx.fillText(
-          `${t} ${AppState.teamNames[t] || ""}: ${teamCounts[t] || 0}`,
-          x + 20,
-          lineY
-        );
+        ctx.textAlign = "center";
+        ctx.fillText(text, cx, lineY);
       });
 
-      downloadBlob(canvas.toDataURL(), "desk-plan.png");
+      downloadBlob(canvas.toDataURL(), finalName);
     };
 
     svgImg.src = url;
