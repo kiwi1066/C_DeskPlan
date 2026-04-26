@@ -52,14 +52,17 @@ export function loadSVG(containerId, svgFile, callback) {
 /**
  * Shared CSV builder.
  * @param {string[]} teamIds  — which teams to include in the #teams section
+ * @param {object}   [meta]   — { buildingId, floorId } to embed in CSV
  */
-function buildCSV(teamIds) {
+function buildCSV(teamIds, meta) {
   const dayKeys = DAYS.map(d => d.key);
 
   // Section 1: teams manifest
   // #category must come before id,name so the parser sees it before skipNext fires
   const catLabel = AppState.categoryLabel || "Teams";
   let csv = `#teams\n`;
+  if (meta?.buildingId) csv += `#building,${meta.buildingId}\n`;
+  if (meta?.floorId)    csv += `#floor,${meta.floorId}\n`;
   csv += `#category,${catLabel}\n`;
   csv += `id,name\n`;
   teamIds.forEach(id => {
@@ -92,13 +95,13 @@ async function promptAndDownload(csv) {
 }
 
 /** Export all teams — including those with no desks assigned */
-export async function exportCSVAllTeams() {
+export async function exportCSVAllTeams(meta) {
   const teamIds = getSortedTeamIds();
-  await promptAndDownload(buildCSV(teamIds));
+  await promptAndDownload(buildCSV(teamIds, meta));
 }
 
 /** Export only teams that have at least one desk assigned on any day */
-export async function exportCSVAssignedTeams() {
+export async function exportCSVAssignedTeams(meta) {
   const assignedIds = new Set();
   DAYS.forEach(({ key }) => {
     Object.values(AppState.deskData).forEach(v => {
@@ -106,10 +109,38 @@ export async function exportCSVAssignedTeams() {
     });
   });
   const teamIds = getSortedTeamIds().filter(id => assignedIds.has(id));
-  await promptAndDownload(buildCSV(teamIds));
+  await promptAndDownload(buildCSV(teamIds, meta));
 }
 
 // ── CSV — Desk data import ────────────────────────────────────────────────────
+
+/**
+ * Read just the metadata header from a CSV file (building, floor, category).
+ * Returns a Promise that resolves to { buildingId, floorId, category } | null.
+ */
+export function peekCSVMeta(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const text  = e.target.result;
+      const lines = text.split("\n").slice(0, 30); // only need header area
+      let buildingId = null, floorId = null, category = null;
+      let inTeams = false;
+      for (const raw of lines) {
+        const line = raw.trim().replace(/\r/g, "");
+        if (line === "#teams") { inTeams = true; continue; }
+        if (line === "#data")  break;
+        if (!inTeams) continue;
+        if (line.startsWith("#building,")) buildingId = line.slice("#building,".length).trim();
+        if (line.startsWith("#floor,"))    floorId    = line.slice("#floor,".length).trim();
+        if (line.startsWith("#category,")) category   = line.slice("#category,".length).trim();
+      }
+      resolve({ buildingId, floorId, category });
+    };
+    reader.onerror = () => resolve(null);
+    reader.readAsText(file);
+  });
+}
 
 export function triggerImport() {
   triggerFileInput("fileInput");
@@ -233,12 +264,7 @@ export function handleTeamImport(file, mode = "replace") {
  * @param {string} planFile   - PNG filename e.g. from getCurrentFloor().plan (svg, we derive png)
  * @param {string} titleText  - e.g. "1 Williams St — Level 11"
  */
-export async function exportImage(planFile, titleText) {
-  if (!_promptFn) { console.warn("No prompt callback set"); return; }
-  const fileName = await _promptFn("Export Image", "File name", "desk-plan");
-  if (!fileName) return;
-  const finalName = fileName.replace(/\.png$/i, "") + ".png";
-
+export function exportImage(planFile, titleText) {
   // Derive PNG name: strip svg extension, add .png
   // Convention: the PNG shares the same base name as the SVG
   const pngFile = planFile ? planFile.replace(/\.svg$/i, ".png") : "floorPlan.png";
@@ -251,7 +277,7 @@ export async function exportImage(planFile, titleText) {
   img.onload = () => {
     const { width, height } = img;
     const bannerH  = 70;
-    const summaryH = 400;
+    const summaryH = 200;
 
     canvas.width  = width;
     canvas.height = height + bannerH + summaryH;
@@ -288,47 +314,43 @@ export async function exportImage(planFile, titleText) {
       ctx.drawImage(svgImg, 0, bannerH);
       URL.revokeObjectURL(url);
 
-      // Summary section — tripled font size, centred
+      // Summary section
       const { teamCounts } = getDaySummaryForExport();
       const teamIds   = getSortedTeamIds();
-      let y           = bannerH + height + 70;
+      let y           = bannerH + height + 40;
 
       ctx.fillStyle = "#000";
       ctx.textAlign = "center";
-      ctx.font = "bold 54px Segoe UI";
+      ctx.font = "bold 18px Segoe UI";
       ctx.fillText("Desk Allocation Summary", width / 2, y);
-      y += 60;
+      y += 30;
 
-      ctx.font = "42px Segoe UI";
-      const perRow   = Math.max(1, Math.floor(width / 600));
+      ctx.font = "14px Segoe UI";
+      const perRow   = Math.max(1, Math.floor(width / 260));
       const colWidth = width / perRow;
-      const rowCount = Math.ceil(teamIds.length / perRow);
-      const blockW   = colWidth * perRow;
-      const startX   = (width - blockW) / 2;
 
       teamIds.forEach((t, i) => {
         const col   = i % perRow;
         const row   = Math.floor(i / perRow);
-        const text  = `${t} ${AppState.teamNames[t] || ""}: ${teamCounts[t] || 0}`;
-        const cx    = startX + col * colWidth + colWidth / 2;
-        const lineY = y + row * 60;
+        const x     = col * colWidth + 20;
+        const lineY = y + row * 26;
         const color = teamColor(t);
 
-        // Measure text so dot sits just left of the text
-        const textW = ctx.measureText(text).width;
-        const dotX  = cx - textW / 2 - 28;
-
         ctx.beginPath();
-        ctx.arc(dotX, lineY - 14, 16, 0, Math.PI * 2);
+        ctx.arc(x + 8, lineY - 6, 6, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
 
         ctx.fillStyle = "#000";
-        ctx.textAlign = "center";
-        ctx.fillText(text, cx, lineY);
+        ctx.textAlign = "left";
+        ctx.fillText(
+          `${t} ${AppState.teamNames[t] || ""}: ${teamCounts[t] || 0}`,
+          x + 20,
+          lineY
+        );
       });
 
-      downloadBlob(canvas.toDataURL(), finalName);
+      downloadBlob(canvas.toDataURL(), "desk-plan.png");
     };
 
     svgImg.src = url;

@@ -48,6 +48,7 @@ import {
   exportImage,
   setRenderCallback,
   setPromptCallback,
+  peekCSVMeta,
 } from "./io.js";
 
 import {
@@ -587,8 +588,14 @@ bind("btn-zoom-in",    "click", zoomIn);
 bind("btn-zoom-out",   "click", zoomOut);
 bind("btn-zoom-reset", "click", resetZoom);
 bind("btn-import",        "click", triggerImport);
-bind("btn-export-all",      "click", exportCSVAllTeams);
-bind("btn-export-assigned", "click", exportCSVAssignedTeams);
+bind("btn-export-all",      "click", () => {
+  const f = getCurrentFloor();
+  exportCSVAllTeams({ buildingId: f.buildingId, floorId: f.floorId });
+});
+bind("btn-export-assigned", "click", () => {
+  const f = getCurrentFloor();
+  exportCSVAssignedTeams({ buildingId: f.buildingId, floorId: f.floorId });
+});
 bind("btn-export-image",  "click", () => {
   const floor = getCurrentFloor();
   exportImage(floor.plan, floorTitle());
@@ -617,10 +624,64 @@ bind("btn-cancel-copy",   "click", closeCopyModal);
 
 // ── File inputs ───────────────────────────────────────────────────────────────
 
-elFileInput.addEventListener("change", e => {
+elFileInput.addEventListener("change", async e => {
   const file = e.target.files[0];
-  if (file) { handleDeskImport(file); elFileInput.value = ""; }
+  elFileInput.value = "";
+  if (!file) return;
+
+  const meta = await peekCSVMeta(file);
+  const cur  = getCurrentFloor();
+
+  // If CSV has building/floor info and it differs from current view, ask user
+  if (meta?.buildingId && meta?.floorId &&
+      (meta.buildingId !== cur.buildingId || meta.floorId !== cur.floorId)) {
+
+    const buildings = getBuildings();
+    const targetBldg  = buildings[meta.buildingId];
+    const targetFloor = targetBldg?.floors?.find(f => f.id === meta.floorId);
+
+    if (!targetBldg || !targetFloor) {
+      await uiConfirm(
+        "Cannot Import",
+        `This file is for ${meta.buildingId} ${meta.floorId}, which isn't configured in this app.`,
+        "OK"
+      );
+      return;
+    }
+
+    const ok = await uiConfirm(
+      "Different Floor",
+      `This file is for ${targetBldg.label} — ${targetFloor.label}.\n\nYou are currently viewing ${cur.buildingLabel} — ${cur.floorLabel}.\n\nSwitch floor and import?`,
+      "Switch & Import"
+    );
+    if (!ok) return;
+
+    // Switch floor, then import after the new SVG has loaded
+    elBuilding.value = meta.buildingId;
+    populateFloorDropdown(meta.buildingId);
+    elFloor.value = meta.floorId;
+    switchFloorAndImport(meta.buildingId, meta.floorId, file);
+    return;
+  }
+
+  // Same floor (or no metadata) — import directly
+  handleDeskImport(file);
 });
+
+/** Switch floor, then import the file once the new floor is ready */
+function switchFloorAndImport(buildingId, floorId, file) {
+  switchFloor(buildingId, floorId);
+  // switchFloor's loadSVG callback runs render() then hideLoading().
+  // Wait for the loading overlay to hide before importing.
+  const checkReady = setInterval(() => {
+    if (elFloorLoading.style.display === "none") {
+      clearInterval(checkReady);
+      handleDeskImport(file);
+    }
+  }, 50);
+  // Safety timeout
+  setTimeout(() => clearInterval(checkReady), 5000);
+}
 
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
