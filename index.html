@@ -116,6 +116,20 @@
     </div>
   </div>
 
+  <!-- Add Teams modal — bulk add up to 10 -->
+  <div id="addTeamsModal" class="ui-modal" role="dialog" aria-modal="true" style="display:none">
+    <h3 id="addTeamsTitle" class="ui-modal-title">Add Teams</h3>
+    <div id="addTeamsRows" class="ui-modal-body" style="max-height:340px;overflow-y:auto;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <button id="btn-add-team-row" class="btn-secondary" style="font-size:12px;">➕ Add another</button>
+      <span id="addTeamsCount" style="font-size:11px;color:var(--text-muted);"></span>
+    </div>
+    <div class="modal-actions">
+      <button id="btn-add-teams-create">Create</button>
+      <button id="btn-add-teams-cancel" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+
   <!-- uiConfirm modal — replaces browser confirm() -->
   <div id="uiConfirmModal" class="ui-modal" role="dialog" aria-modal="true" style="display:none">
     <h3 id="uiConfirmTitle" class="ui-modal-title"></h3>

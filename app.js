@@ -631,14 +631,117 @@ function toggleMultiMode() {
   btn.classList.toggle("btn-active", AppState.multiMode);
 }
 
-async function handleAddTeam() {
-  const id   = nextTeamId();
-  const name = await uiPrompt(`Add ${(AppState.categoryLabel || "Teams").replace(/s$/i, "")}`, "Name", "", "Add");
-  if (!name?.trim()) return;
-  addTeam(id, name.trim());
+// ── Bulk Add Teams modal ──────────────────────────────────────────────────────
+
+const MAX_BULK_TEAMS = 10;
+
+function openAddTeamsModal() {
+  const labelPlural   = AppState.categoryLabel || "Teams";
+  const labelSingular = labelPlural.replace(/s$/i, "");
+  document.getElementById("addTeamsTitle").textContent = `Add ${labelPlural}`;
+
+  const rowsEl = document.getElementById("addTeamsRows");
+  rowsEl.innerHTML = "";
+  addTeamsRow(labelSingular); // start with one row
+
+  document.getElementById("addTeamsModal").style.display = "block";
+  getModalBackdrop().classList.add("active");
+  updateAddTeamsCount();
+  rowsEl.querySelector("input")?.focus();
+}
+
+function closeAddTeamsModal() {
+  document.getElementById("addTeamsModal").style.display = "none";
+  getModalBackdrop().classList.remove("active");
+}
+
+function getModalBackdrop() {
+  let el = document.getElementById("modalBackdrop");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "modalBackdrop";
+    el.className = "modal-backdrop";
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function addTeamsRow(labelSingular) {
+  const rowsEl = document.getElementById("addTeamsRows");
+  if (rowsEl.children.length >= MAX_BULK_TEAMS) return;
+
+  const row = document.createElement("div");
+  row.style.cssText = "display:flex;gap:6px;align-items:center;margin-bottom:6px;";
+  row.innerHTML = `
+    <input type="text" class="ui-modal-input add-team-input" placeholder="${labelSingular} name" autocomplete="off" spellcheck="false" style="flex:1;">
+    <button class="btn-secondary remove-row-btn" title="Remove" style="padding:6px 10px;">✕</button>
+  `;
+  rowsEl.appendChild(row);
+
+  const input = row.querySelector("input");
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const inputs = [...rowsEl.querySelectorAll("input")];
+      const idx    = inputs.indexOf(input);
+      if (idx === inputs.length - 1 && rowsEl.children.length < MAX_BULK_TEAMS && input.value.trim()) {
+        addTeamsRow(labelSingular);
+        rowsEl.lastElementChild.querySelector("input").focus();
+      } else if (idx < inputs.length - 1) {
+        inputs[idx + 1].focus();
+      } else {
+        document.getElementById("btn-add-teams-create").click();
+      }
+    }
+    if (e.key === "Escape") closeAddTeamsModal();
+  });
+
+  row.querySelector(".remove-row-btn").addEventListener("click", () => {
+    if (rowsEl.children.length > 1) {
+      row.remove();
+      updateAddTeamsCount();
+    }
+  });
+
+  updateAddTeamsCount();
+}
+
+function updateAddTeamsCount() {
+  const rowsEl   = document.getElementById("addTeamsRows");
+  const countEl  = document.getElementById("addTeamsCount");
+  const addBtn   = document.getElementById("btn-add-team-row");
+  const n = rowsEl.children.length;
+  countEl.textContent = `${n} / ${MAX_BULK_TEAMS}`;
+  addBtn.disabled = n >= MAX_BULK_TEAMS;
+  addBtn.style.opacity = n >= MAX_BULK_TEAMS ? "0.4" : "1";
+}
+
+function createTeamsFromModal() {
+  const inputs = [...document.querySelectorAll("#addTeamsRows .add-team-input")];
+  const names  = inputs.map(i => i.value.trim()).filter(n => n);
+  if (!names.length) { closeAddTeamsModal(); return; }
+
+  names.forEach(name => {
+    const id = nextTeamId();
+    addTeam(id, name);
+  });
   saveState();
+  closeAddTeamsModal();
   render();
 }
+
+function handleAddTeam() {
+  openAddTeamsModal();
+}
+
+// Bind multi-add modal buttons
+document.getElementById("btn-add-team-row").addEventListener("click", () => {
+  const labelSingular = (AppState.categoryLabel || "Teams").replace(/s$/i, "");
+  addTeamsRow(labelSingular);
+  document.getElementById("addTeamsRows").lastElementChild.querySelector("input").focus();
+});
+document.getElementById("btn-add-teams-create").addEventListener("click", createTeamsFromModal);
+document.getElementById("btn-add-teams-cancel").addEventListener("click", closeAddTeamsModal);
 
 async function handleClearDesks() {
   const ok = await uiConfirm(
