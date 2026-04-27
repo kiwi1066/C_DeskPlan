@@ -28,14 +28,34 @@
     "label": "275 George St",
     "floors": [
       {
+        "id":    "L9",
+        "label": "Level 9",
+        "plan":  "275G_L9_deskPlan.svg"
+      },
+      {
+        "id":    "L10",
+        "label": "Level 10",
+        "plan":  "275G_L10_deskPlan.svg"
+      },
+      {
         "id":    "L11",
         "label": "Level 11",
         "plan":  "275G_L11_deskPlan.svg"
       },
       {
-        "id":    "L9",
-        "label": "Level 9",
-        "plan":  "275G_L9_deskPlan.svg"
+        "id":    "L12",
+        "label": "Level 12",
+        "plan":  "275G_L12_deskPlan.svg"
+      },
+       {
+        "id":    "L13",
+        "label": "Level 13",
+        "plan":  "275G_L13_deskPlan.svg"
+      },
+      {
+        "id":    "L14",
+        "label": "Level 14",
+        "plan":  "275G_L14_deskPlan.svg"
       }
     ]
   },
