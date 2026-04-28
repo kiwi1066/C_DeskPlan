@@ -347,20 +347,47 @@
     <h2 id="teams">Managing Teams</h2>
 
     <p><strong>Adding teams</strong></p>
+    <p>
+      Click <span class="btn-pill">&#10133; Add Team</span> to open the team builder. You can add
+      <strong>up to 10 teams at once</strong>, each with its own colour:
+    </p>
     <ul>
-      <li><span class="btn-pill">&#10133; Add Team</span> — creates one team at a time. Enter a display name when prompted. The ID (T1, T2&hellip;) is assigned automatically.</li>
-      <li><span class="btn-pill">&#128194; Import</span> — restores a previously exported desk plan, including the full team list.</li>
+      <li>Each row has a coloured swatch, a name field, and a remove button.</li>
+      <li>Click <strong>+ Add another</strong> to add more rows (max 10).</li>
+      <li>Press <kbd>Enter</kbd> on the last row to add another row, or on any other row to submit.</li>
+      <li>Empty rows are skipped on submit — only named rows become teams.</li>
+      <li>The Add button updates live to show the count, e.g. <span class="btn-pill">Add 3 teams</span>.</li>
     </ul>
 
-    <p><strong>Renaming a team</strong></p>
+    <p><strong>Choosing a colour</strong></p>
+    <p>
+      Each row starts with the next unused palette colour assigned automatically. To change it:
+    </p>
+    <ul>
+      <li>Click the row's swatch — a popover opens showing the full colour palette.</li>
+      <li>Colours already in use (by other rows in this batch or by existing teams) are <strong>dimmed and disabled</strong> so every team gets a unique colour.</li>
+      <li>The currently-selected colour for the row is outlined in black.</li>
+      <li>Click any available swatch to select it. The previously-held colour returns to the available pool for other rows.</li>
+      <li>Click the <strong>rainbow swatch</strong> at the end of the popover to open a native colour picker for any custom hex colour — useful for matching brand colours.</li>
+    </ul>
+    <div class="tip">
+      <strong>Tip:</strong> The palette has 22 hand-picked colours chosen to be clearly distinguishable from each other. Beyond that, the legend will warn you that colours may start to look similar.
+    </div>
+
+    <p><strong>Renaming a team or changing its colour</strong></p>
     <p>
       Hover over any team chip in the Teams legend — a <strong>&#9999;&#65039;</strong> edit button
-      appears on the right edge. Click it to open the team editor. Edit the name and
-      press <strong>Save</strong> or <kbd>Enter</kbd>. Press <kbd>Escape</kbd> to cancel.
+      appears on the right edge. Click it to open the team editor.
     </p>
+    <ul>
+      <li>Edit the name and press <strong>Save</strong> or <kbd>Enter</kbd>.</li>
+      <li>To change the colour, untick <strong>Auto-pick colour</strong> and click a swatch from the grid below.</li>
+      <li>Tick <strong>Auto-pick colour</strong> to revert to the auto-assigned palette colour.</li>
+      <li>Press <kbd>Escape</kbd> to cancel without saving.</li>
+    </ul>
     <div class="note">
-      The team's <strong>ID</strong> (e.g. T1) never changes — only the display name is updated.
-      IDs stay consistent so team colours remain stable across exports and re-imports.
+      The team's <strong>ID</strong> (e.g. T1) never changes — only the display name and colour are updated.
+      IDs stay consistent so teams can be reliably matched on import/export.
     </div>
 
     <p><strong>Deleting a team</strong></p>
@@ -390,7 +417,7 @@
     <table class="ref-table">
       <tr>
         <td><span class="btn-pill">&#10133; Add Team</span></td>
-        <td>Creates a new team manually. Enter a display name — the ID (T1, T2&hellip;) is assigned automatically.</td>
+        <td>Opens the team builder modal. Add up to 10 teams in one go, each with its own colour. Click any swatch to choose a different palette colour or open a custom colour picker.</td>
       </tr>
       <tr>
         <td><span class="btn-pill">&#128194; Import</span></td>
@@ -523,18 +550,20 @@
     </p>
     <div class="csv-block">
       #teams<br>
-      id,name<br>
-      T1,Finance<br>
-      T2,Engineering<br>
-      T3,HR<br>
+      #category,Teams<br>
+      id,name,color<br>
+      T1,Finance,#fc2003<br>
+      T2,Engineering,<br>
+      T3,HR,#0377fc<br>
       #data<br>
       desk,mon,tue,wed,thu,fri,mon_name,tue_name,wed_name,thu_name,fri_name<br>
       desk-001,T1,T1,T2,,T1,Finance,Finance,Engineering,,Finance<br>
       desk-002,T3,,,T3,,HR,,,HR,
     </div>
     <ul>
-      <li>The <code>#teams</code> section lists the teams included in this export. On re-import, these teams are restored first — ensuring all team names and colours are consistent before desk assignments are applied.</li>
+      <li>The <code>#teams</code> section lists the teams included in this export. The <code>color</code> column holds any custom or chosen colour as a hex code; if blank, the team uses its default palette colour based on its ID.</li>
       <li>The <code>#data</code> section has one row per desk with team IDs for each day, plus team name columns for readability in Excel.</li>
+      <li>Older CSV files exported before custom colours were supported still import correctly — teams will fall back to their default palette colours.</li>
     </ul>
 
     <div class="tip">
@@ -546,15 +575,17 @@
     <!-- ═══ Tips ═══ -->
     <h2 id="tips">Tips &amp; Best Practices</h2>
     <ul>
+      <li>Add multiple teams in one go — the team builder accepts up to 10 at a time and assigns unused colours automatically.</li>
+      <li>Use the rainbow swatch in the colour popover to match brand colours exactly via the custom colour picker.</li>
       <li>Zoom in first when selecting desks in dense areas — scroll wheel zooms to wherever your cursor is.</li>
       <li>Use <kbd>Shift</kbd>+drag for large zones, then <kbd>Ctrl</kbd>+click to fine-tune individual desks.</li>
       <li>Use <strong>Copy Day</strong> to roll Monday's plan across the week, then adjust individual days.</li>
       <li>Use <strong>Compare</strong> mode to review differences between two days before finalising.</li>
-      <li>Use <strong>Export All Teams</strong> at the end of each week — re-importing it next week restores your full team roster instantly without having to recreate it.</li>
+      <li>Use <strong>Export All Teams</strong> at the end of each week — re-importing it next week restores your full team roster (including custom colours) instantly without having to recreate it.</li>
       <li>Use <strong>Export Assigned Teams</strong> when sharing a plan with others — it gives a clean view of only the teams actively using the floor.</li>
       <li>Each floor saves independently — remember to Export each floor you work on if you want a portable backup.</li>
       <li>Use <strong>Delete, Keep Colours</strong> when retiring a team mid-week — the floor plan stays readable while you reassign desks gradually.</li>
-      <li>Team IDs (T1, T2&hellip;) never change, so colours stay consistent across exports, re-imports, and floor switches.</li>
+      <li>Team IDs (T1, T2&hellip;) never change, so teams stay consistent across exports, re-imports, and floor switches.</li>
     </ul>
 
   </main>
