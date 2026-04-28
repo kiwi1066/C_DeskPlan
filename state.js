@@ -99,26 +99,28 @@ export function nextTeamId() {
 // we fall back to a hash-based HSL so colours stay stable but may repeat.
 
 const TEAM_PALETTE = [
-  "#e41a1c", // red
-  "#377eb8", // blue
-  "#4daf4a", // green
-  "#984ea3", // purple
-  "#ff7f00", // orange
-  "#ffd92f", // yellow
-  "#a65628", // brown
-  "#f781bf", // pink
-  "#17becf", // cyan
-  "#999999", // grey
-  "#8c1d40", // dark red
-  "#1f78b4", // navy
-  "#33a02c", // dark green
-  "#6a3d9a", // dark purple
-  "#b15928", // dark orange
-  "#bcbd22", // olive
-  "#7f7f7f", // dark grey
-  "#fb9a99", // light pink
-  "#a6cee3", // light blue
-  "#b2df8a", // light green
+  "#fc2003",
+  "#fc9003",
+  "#fcdb03",
+  "#03fc17",
+  "#03fc7b",
+  "#03fce8",
+  "#03c6fc",
+  "#0377fc",
+  "#0320fc",
+  "#9803fc",
+  "#f003fc",
+  "#fc03b6",
+  "#fc0341",
+  "#8a1601",
+  "#638a01",
+  "#018a28",
+  "#018a83",
+  "#01488a",
+  "#06018a",
+  "#53018a",
+  "#8a0165",
+  "#8a012a",
 ];
 
 export const PALETTE_SIZE = TEAM_PALETTE.length;
