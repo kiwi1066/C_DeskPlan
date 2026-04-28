@@ -37,6 +37,7 @@ import {
   registerDesk,
   setTeamColor,
   nextAutoColor,
+  TEAM_PALETTE,
 } from "./state.js";
 
 import { createColorPicker } from "./colorPicker.js";
@@ -654,51 +655,291 @@ function toggleMultiMode() {
   btn.classList.toggle("btn-active", AppState.multiMode);
 }
 
-// Init add-team modal colour picker
-const _addPicker = createColorPicker({
-  gridEl: document.getElementById("addTeamSwatchGrid"),
-  autoEl: document.getElementById("addTeamAutoColor"),
-});
+// ── Multi-row Add Team builder ───────────────────────────────────────────────
+//
+// Up to 10 rows. Each row has [swatch][name input][× remove].
+// Hovering a swatch opens a shared popover showing all palette colours +
+// a custom swatch. Colours used in this batch (or already in existing teams)
+// are dimmed and disabled.
 
 const _addTeamEls = {
-  modal:   document.getElementById("addTeamModal"),
-  title:   document.getElementById("addTeamTitle"),
-  input:   document.getElementById("addTeamInput"),
-  confirm: document.getElementById("addTeamConfirm"),
-  cancel:  document.getElementById("addTeamCancel"),
+  modal:    document.getElementById("addTeamModal"),
+  title:    document.getElementById("addTeamTitle"),
+  rows:     document.getElementById("addTeamRows"),
+  addRow:   document.getElementById("addTeamAddRow"),
+  confirm:  document.getElementById("addTeamConfirm"),
+  cancel:   document.getElementById("addTeamCancel"),
+  popover:  document.getElementById("swatchPopover"),
+  popGrid:  document.getElementById("swatchPopoverGrid"),
 };
+
+const MAX_ROWS = 10;
+
+// Row state: { id, color }  — id is internal, name comes from input value
+let _rows = [];
+let _rowIdCounter = 0;
+let _activeRowId = null;          // which row's popover is open
+let _customInputHandler = null;   // for cleaning up native picker listener
+
+function unusedPaletteColors() {
+  // Colours used: existing teams + any colour already chosen in this batch
+  const used = new Set();
+  Object.keys(AppState.teamNames).forEach(id => {
+    used.add(teamColor(id).toLowerCase());
+  });
+  _rows.forEach(r => used.add(r.color.toLowerCase()));
+  return TEAM_PALETTE.filter(c => !used.has(c.toLowerCase()));
+}
+
+function nextUnusedColor(excludeRowId = null) {
+  const used = new Set();
+  Object.keys(AppState.teamNames).forEach(id => {
+    used.add(teamColor(id).toLowerCase());
+  });
+  _rows.forEach(r => {
+    if (r.id !== excludeRowId) used.add(r.color.toLowerCase());
+  });
+  for (const c of TEAM_PALETTE) {
+    if (!used.has(c.toLowerCase())) return c;
+  }
+  return TEAM_PALETTE[0]; // all used — duplicate first colour
+}
+
+function renderAddTeamRows() {
+  _addTeamEls.rows.innerHTML = "";
+  _rows.forEach((row, index) => {
+    const rowEl = document.createElement("div");
+    rowEl.className = "add-team-row";
+    rowEl.dataset.rowId = row.id;
+
+    const swatch = document.createElement("button");
+    swatch.type = "button";
+    swatch.className = "row-swatch";
+    swatch.style.background = row.color;
+    swatch.title = "Click to choose colour";
+    swatch.addEventListener("click", e => {
+      e.stopPropagation();
+      openSwatchPopover(row.id, swatch);
+    });
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "row-input";
+    input.placeholder = `Team ${index + 1} name`;
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.value = row.name || "";
+    input.dataset.rowId = row.id;
+    input.addEventListener("input", e => { row.name = e.target.value; });
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (_rows.length < MAX_ROWS && index === _rows.length - 1) {
+          addNewRow();
+          // Focus new input
+          setTimeout(() => {
+            const inputs = _addTeamEls.rows.querySelectorAll(".row-input");
+            if (inputs.length) inputs[inputs.length - 1].focus();
+          }, 30);
+        } else {
+          confirmAddTeams();
+        }
+      }
+      if (e.key === "Escape") closeAddTeamModal();
+    });
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "row-remove";
+    remove.title = "Remove row";
+    remove.textContent = "✕";
+    remove.addEventListener("click", e => {
+      e.stopPropagation();
+      _rows = _rows.filter(r => r.id !== row.id);
+      if (_rows.length === 0) addNewRow(); // always keep at least one
+      renderAddTeamRows();
+      updateConfirmLabel();
+      updateAddRowButton();
+    });
+
+    rowEl.append(swatch, input, remove);
+    _addTeamEls.rows.appendChild(rowEl);
+  });
+}
+
+function addNewRow() {
+  if (_rows.length >= MAX_ROWS) return;
+  _rows.push({
+    id: ++_rowIdCounter,
+    name: "",
+    color: nextUnusedColor(),
+  });
+  renderAddTeamRows();
+  updateConfirmLabel();
+  updateAddRowButton();
+}
+
+function updateAddRowButton() {
+  _addTeamEls.addRow.disabled = _rows.length >= MAX_ROWS;
+  _addTeamEls.addRow.textContent = _rows.length >= MAX_ROWS
+    ? "Maximum 10 reached"
+    : "+ Add another";
+}
+
+function updateConfirmLabel() {
+  const named = _rows.filter(r => r.name.trim()).length;
+  if (named === 0) {
+    _addTeamEls.confirm.textContent = "Add";
+    _addTeamEls.confirm.disabled = true;
+  } else {
+    const word = named === 1 ? "team" : "teams";
+    const singular = (AppState.categoryLabel || "Teams").replace(/s$/i, "").toLowerCase();
+    const plural = singular + (named === 1 ? "" : "s");
+    _addTeamEls.confirm.textContent = `Add ${named} ${plural}`;
+    _addTeamEls.confirm.disabled = false;
+  }
+}
+
+// Re-check confirm label whenever any row input changes
+_addTeamEls.rows.addEventListener("input", updateConfirmLabel);
+
+// ── Swatch popover ────────────────────────────────────────────────────────────
+
+function openSwatchPopover(rowId, anchorEl) {
+  _activeRowId = rowId;
+  buildPopoverGrid(rowId);
+
+  // Position popover below the anchor
+  const rect = anchorEl.getBoundingClientRect();
+  _addTeamEls.popover.style.display = "block";
+  _addTeamEls.popover.style.left = (rect.left + window.scrollX) + "px";
+  _addTeamEls.popover.style.top  = (rect.bottom + window.scrollY + 4) + "px";
+
+  // Close on outside click
+  setTimeout(() => {
+    document.addEventListener("mousedown", onPopoverOutsideClick);
+  }, 0);
+}
+
+function closeSwatchPopover() {
+  _addTeamEls.popover.style.display = "none";
+  _activeRowId = null;
+  document.removeEventListener("mousedown", onPopoverOutsideClick);
+}
+
+function onPopoverOutsideClick(e) {
+  if (!_addTeamEls.popover.contains(e.target)) closeSwatchPopover();
+}
+
+function buildPopoverGrid(rowId) {
+  const row = _rows.find(r => r.id === rowId);
+  if (!row) return;
+
+  // Build set of used colours (existing teams + other rows in this batch)
+  const used = new Set();
+  Object.keys(AppState.teamNames).forEach(id => {
+    used.add(teamColor(id).toLowerCase());
+  });
+  _rows.forEach(r => {
+    if (r.id !== rowId) used.add(r.color.toLowerCase());
+  });
+
+  _addTeamEls.popGrid.innerHTML = "";
+
+  TEAM_PALETTE.forEach(c => {
+    const cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "swatch-popover-cell";
+    cell.style.background = c;
+    cell.title = c;
+
+    const isUsed    = used.has(c.toLowerCase());
+    const isCurrent = c.toLowerCase() === row.color.toLowerCase();
+
+    if (isUsed && !isCurrent) cell.classList.add("used");
+    if (isCurrent) cell.classList.add("current");
+
+    cell.addEventListener("click", e => {
+      e.stopPropagation();
+      row.color = c;
+      renderAddTeamRows();
+      closeSwatchPopover();
+    });
+
+    _addTeamEls.popGrid.appendChild(cell);
+  });
+
+  // Custom (rainbow) cell — always available
+  const custom = document.createElement("button");
+  custom.type = "button";
+  custom.className = "swatch-popover-cell custom";
+  custom.title = "Custom colour";
+  custom.addEventListener("click", e => {
+    e.stopPropagation();
+    const input = document.getElementById("customColorInput");
+    input.value = row.color.startsWith("#") ? row.color : "#000000";
+
+    // Clean up any previous handler
+    if (_customInputHandler) {
+      input.removeEventListener("change", _customInputHandler);
+    }
+    _customInputHandler = () => {
+      row.color = input.value;
+      renderAddTeamRows();
+      closeSwatchPopover();
+      input.removeEventListener("change", _customInputHandler);
+      _customInputHandler = null;
+    };
+    input.addEventListener("change", _customInputHandler);
+    input.click();
+  });
+  _addTeamEls.popGrid.appendChild(custom);
+}
+
+// ── Modal open/close ──────────────────────────────────────────────────────────
 
 function openAddTeamModal() {
   const singular = (AppState.categoryLabel || "Teams").replace(/s$/i, "");
-  _addTeamEls.title.textContent = `Add ${singular}`;
-  _addTeamEls.input.value = "";
-  _addPicker.set({ auto: true, color: nextAutoColor() });
+  _addTeamEls.title.textContent = `Add ${singular}s`;
+  _rows = [];
+  addNewRow();
   _addTeamEls.modal.style.display = "block";
   document.getElementById("modalBackdrop").classList.add("active");
-  setTimeout(() => _addTeamEls.input.focus(), 30);
+  setTimeout(() => {
+    const firstInput = _addTeamEls.rows.querySelector(".row-input");
+    if (firstInput) firstInput.focus();
+  }, 30);
 }
 
 function closeAddTeamModal() {
+  closeSwatchPopover();
   _addTeamEls.modal.style.display = "none";
   document.getElementById("modalBackdrop").classList.remove("active");
 }
 
-function confirmAddTeam() {
-  const name = _addTeamEls.input.value.trim();
-  if (!name) return;
-  const id = nextTeamId();
-  const { auto, color } = _addPicker.get();
-  addTeam(id, name, auto ? undefined : color);
+function confirmAddTeams() {
+  const valid = _rows.filter(r => r.name.trim());
+  if (!valid.length) return;
+
+  valid.forEach(row => {
+    const id = nextTeamId();
+    // Pass the colour through — never auto since user has the swatch in front of them
+    addTeam(id, row.name.trim(), row.color);
+  });
+
   saveState();
   closeAddTeamModal();
   render();
 }
 
-_addTeamEls.confirm.addEventListener("click", confirmAddTeam);
+_addTeamEls.confirm.addEventListener("click", confirmAddTeams);
 _addTeamEls.cancel.addEventListener("click", closeAddTeamModal);
-_addTeamEls.input.addEventListener("keydown", e => {
-  if (e.key === "Enter")  confirmAddTeam();
-  if (e.key === "Escape") closeAddTeamModal();
+_addTeamEls.addRow.addEventListener("click", () => {
+  addNewRow();
+  setTimeout(() => {
+    const inputs = _addTeamEls.rows.querySelectorAll(".row-input");
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  }, 30);
 });
 
 function handleAddTeam() {

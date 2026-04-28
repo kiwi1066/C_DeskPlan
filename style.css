@@ -810,6 +810,167 @@ button[data-active="true"] { background: var(--accent); }
   text-shadow: 0 0 2px rgba(0,0,0,0.6);
 }
 
+/* ── Add-team multi-row builder ──────────────────────────────── */
+.add-team-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.add-team-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-team-row .row-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: transform 0.1s, border-color 0.15s;
+  position: relative;
+}
+
+.add-team-row .row-swatch:hover {
+  transform: scale(1.1);
+  border-color: var(--brand-mid);
+}
+
+.add-team-row .row-swatch.custom-color {
+  background: linear-gradient(135deg, #f00 0%, #ff0 25%, #0f0 50%, #0ff 75%, #00f 100%);
+}
+
+.add-team-row .row-input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 0;
+}
+
+.add-team-row .row-input:focus {
+  border-color: var(--brand-mid);
+}
+
+.add-team-row .row-remove {
+  all: unset;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.add-team-row .row-remove:hover {
+  background: #fdecea;
+  color: var(--danger);
+}
+
+.add-row-btn {
+  margin-top: 8px;
+  background: transparent;
+  color: var(--brand-mid);
+  border: 1px dashed var(--brand-mid);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  width: 100%;
+  justify-content: center;
+}
+
+.add-row-btn:hover {
+  background: var(--brand-light);
+}
+
+.add-row-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: transparent;
+}
+
+/* ── Floating swatch popover ─────────────────────────────────── */
+.swatch-popover {
+  position: absolute;
+  z-index: 1200;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  padding: 8px;
+  animation: popover-fade 0.12s ease-out;
+}
+
+@keyframes popover-fade {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.swatch-popover-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 22px);
+  gap: 4px;
+}
+
+.swatch-popover-cell {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  padding: 0;
+  transition: transform 0.1s, border-color 0.15s;
+  position: relative;
+}
+
+.swatch-popover-cell:hover {
+  transform: scale(1.2);
+  border-color: #000;
+}
+
+.swatch-popover-cell.used {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.swatch-popover-cell.current {
+  border-color: #000;
+  box-shadow: 0 0 0 1.5px #fff inset;
+}
+
+.swatch-popover-cell.custom {
+  background: linear-gradient(135deg, #f00 0%, #ff0 25%, #0f0 50%, #0ff 75%, #00f 100%);
+}
+
+.swatch-popover-cell.custom::after {
+  content: "+";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 2px rgba(0,0,0,0.7);
+}
+
 /* ── Modal layout ─────────────────────────────────────────────── */
 .modal-backdrop {
   display: none;
