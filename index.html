@@ -116,20 +116,6 @@
     </div>
   </div>
 
-  <!-- Add Teams modal — bulk add up to 10 -->
-  <div id="addTeamsModal" class="ui-modal" role="dialog" aria-modal="true" style="display:none">
-    <h3 id="addTeamsTitle" class="ui-modal-title">Add Teams</h3>
-    <div id="addTeamsRows" class="ui-modal-body" style="max-height:340px;overflow-y:auto;"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <button id="btn-add-team-row" class="btn-secondary" style="font-size:12px;">➕ Add another</button>
-      <span id="addTeamsCount" style="font-size:11px;color:var(--text-muted);"></span>
-    </div>
-    <div class="modal-actions">
-      <button id="btn-add-teams-create">Create</button>
-      <button id="btn-add-teams-cancel" class="btn-secondary">Cancel</button>
-    </div>
-  </div>
-
   <!-- uiConfirm modal — replaces browser confirm() -->
   <div id="uiConfirmModal" class="ui-modal" role="dialog" aria-modal="true" style="display:none">
     <h3 id="uiConfirmTitle" class="ui-modal-title"></h3>
@@ -139,6 +125,28 @@
       <button id="uiConfirmCancel" class="btn-secondary">Cancel</button>
     </div>
   </div>
+
+  <!-- Add Team modal -->
+  <div id="addTeamModal" class="ui-modal" role="dialog" aria-modal="true" style="display:none">
+    <h3 id="addTeamTitle" class="ui-modal-title">Add Team</h3>
+    <div class="ui-modal-body">
+      <label class="ui-modal-label">Name</label>
+      <input id="addTeamInput" type="text" class="ui-modal-input" autocomplete="off" spellcheck="false">
+      <div class="color-picker-wrap" style="margin-top:14px;">
+        <label class="color-auto-row">
+          <input type="checkbox" id="addTeamAutoColor" checked> Auto-pick colour
+        </label>
+        <div id="addTeamSwatchGrid" class="color-swatch-grid"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="addTeamConfirm">Add</button>
+      <button id="addTeamCancel" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Hidden native colour input — for custom swatch -->
+  <input type="color" id="customColorInput" style="position:absolute;left:-9999px;" aria-hidden="true">
 
   <!-- Copy modal -->
   <div id="copyModal" role="dialog" aria-modal="true">
@@ -160,6 +168,12 @@
       <div class="team-edit-body">
         <label for="teamEditInput">Name</label>
         <input id="teamEditInput" type="text" autocomplete="off" spellcheck="false">
+        <div class="color-picker-wrap" style="margin-top:10px;">
+          <label class="color-auto-row">
+            <input type="checkbox" id="teamEditAutoColor"> Auto-pick colour
+          </label>
+          <div id="teamEditSwatchGrid" class="color-swatch-grid"></div>
+        </div>
       </div>
       <div class="modal-actions">
         <button id="btn-team-edit-save">Save</button>

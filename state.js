@@ -22,6 +22,7 @@ export function setStorageKey(key) { _storageKey = key; }
 export const AppState = {
   deskData:      {},   // { "desk-001": { mon:"T1", tue:"", ... }, ... }
   teamNames:     {},   // { "T1": "Finance", "T2": "HR", ... }
+  teamColors:    {},   // { "T1": "#fc2003", ... } — manual overrides only
   selectedDesks: [],
   history:       [],
   multiMode:     false,
@@ -42,8 +43,14 @@ export function registerDesk(id) {
 
 // ── Team helpers ─────────────────────────────────────────────────────────────
 
-export function addTeam(id, name) {
+export function addTeam(id, name, color) {
   AppState.teamNames[id] = name;
+  if (color) AppState.teamColors[id] = color;
+}
+
+export function setTeamColor(id, color) {
+  if (color) AppState.teamColors[id] = color;
+  else delete AppState.teamColors[id];
 }
 
 export function renameTeam(id, newName) {
@@ -52,6 +59,7 @@ export function renameTeam(id, newName) {
 
 export function deleteTeam(id, unassignDesks = false) {
   delete AppState.teamNames[id];
+  delete AppState.teamColors[id];
   if (unassignDesks) {
     DAYS.forEach(({ key }) => {
       Object.keys(AppState.deskData).forEach(deskId => {
@@ -75,7 +83,8 @@ export function teamDeskCount(teamId) {
 }
 
 export function removeAllTeams() {
-  AppState.teamNames = {};
+  AppState.teamNames  = {};
+  AppState.teamColors = {};
 }
 
 export function getSortedTeamIds() {
@@ -98,7 +107,7 @@ export function nextTeamId() {
 // saturation so adjacent IDs never end up looking the same. Beyond 20 teams
 // we fall back to a hash-based HSL so colours stay stable but may repeat.
 
-const TEAM_PALETTE = [
+export const TEAM_PALETTE = [
   "#fc2003",
   "#fc9003",
   "#fcdb03",
@@ -125,16 +134,32 @@ const TEAM_PALETTE = [
 
 export const PALETTE_SIZE = TEAM_PALETTE.length;
 
-export function teamColor(teamId) {
-  if (!teamId) return "transparent";
-  const num = parseInt(teamId.replace("T", "")) || 0;
-  if (num >= 1 && num <= TEAM_PALETTE.length) {
-    return TEAM_PALETTE[num - 1];
+/** Returns the next palette colour not already in use (manual or auto). */
+export function nextAutoColor() {
+  const used = new Set();
+  Object.keys(AppState.teamNames).forEach(id => {
+    used.add((AppState.teamColors[id] || autoColor(id)).toLowerCase());
+  });
+  for (const c of TEAM_PALETTE) {
+    if (!used.has(c.toLowerCase())) return c;
   }
-  // Fallback for teams beyond the palette
+  // All palette colours used — fall through to hash-based
+  return autoColor("T" + (Object.keys(AppState.teamNames).length + 1));
+}
+
+function autoColor(teamId) {
+  const num = parseInt(teamId.replace("T", "")) || 0;
+  if (num >= 1 && num <= TEAM_PALETTE.length) return TEAM_PALETTE[num - 1];
   const hue = (num * 47) % 360;
   const lt  = 45 + (num % 3) * 8;
   return `hsl(${hue}, 60%, ${lt}%)`;
+}
+
+export function teamColor(teamId) {
+  if (!teamId) return "transparent";
+  // Manual override wins
+  if (AppState.teamColors[teamId]) return AppState.teamColors[teamId];
+  return autoColor(teamId);
 }
 
 // ── Desk assignment ───────────────────────────────────────────────────────────
@@ -215,6 +240,7 @@ export function saveState() {
     localStorage.setItem(_storageKey, JSON.stringify({
       deskData:      AppState.deskData,
       teamNames:     AppState.teamNames,
+      teamColors:    AppState.teamColors,
       categoryLabel: AppState.categoryLabel,
     }));
   } catch (e) {
@@ -228,8 +254,9 @@ export function loadState() {
     if (!raw) return;
     const saved = JSON.parse(raw);
 
-    const savedDesks = saved.deskData || saved;
-    const savedTeams = saved.teamNames || {};
+    const savedDesks  = saved.deskData || saved;
+    const savedTeams  = saved.teamNames  || {};
+    const savedColors = saved.teamColors || {};
 
     Object.keys(savedDesks).forEach(id => {
       if (AppState.deskData[id]) {
@@ -237,7 +264,8 @@ export function loadState() {
       }
     });
 
-    AppState.teamNames = savedTeams;
+    AppState.teamNames  = savedTeams;
+    AppState.teamColors = savedColors;
 
     // Restore user-edited category label if present
     if (saved.categoryLabel) AppState.categoryLabel = saved.categoryLabel;
@@ -256,6 +284,7 @@ export function clearAllData() {
     DAYS.forEach(({ key }) => { AppState.deskData[id][key] = ""; });
   });
   AppState.teamNames     = {};
+  AppState.teamColors    = {};
   AppState.selectedDesks = [];
   AppState.history       = [];
   saveState();
@@ -265,6 +294,7 @@ export function clearAllData() {
 export function resetFloorData() {
   AppState.deskData      = {};
   AppState.teamNames     = {};
+  AppState.teamColors    = {};
   AppState.selectedDesks = [];
   AppState.history       = [];
   AppState.mode          = "single";

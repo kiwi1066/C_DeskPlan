@@ -513,16 +513,6 @@ button[data-active="true"] { background: var(--accent); }
   font-weight: 600;
 }
 
-/* ── Desk hover outline (50% of selected style) ──────────────── */
-#svgContainer g[id^='desk']:hover rect,
-#svgContainer g[id^='desk']:hover polygon,
-#svgContainer g[id^='desk']:hover path {
-  stroke: #555;
-  stroke-width: 1.8;
-  stroke-opacity: 0.5;
-  cursor: pointer;
-}
-
 /* ── Map layout ──────────────────────────────────────────────── */
 .map-area {
   margin: 0 14px 20px;
@@ -593,15 +583,6 @@ button[data-active="true"] { background: var(--accent); }
 .mapBox img {
   width: 100%;
   display: block;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-}
-
-.mapBox,
-.mapBox img,
-.svgLayer svg {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 .svgLayer {
@@ -754,7 +735,82 @@ button[data-active="true"] { background: var(--accent); }
   justify-content: flex-end;
 }
 
-/* ── Modal backdrop ──────────────────────────────────────────── */
+/* ── Colour swatch picker ────────────────────────────────────── */
+.color-picker-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.color-auto-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.color-auto-row input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.color-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.color-swatch-grid.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.color-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.1s, border-color 0.15s;
+  padding: 0;
+  min-width: 0;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch.selected {
+  border-color: #000;
+  box-shadow: 0 0 0 2px #fff inset;
+}
+
+.color-swatch.custom {
+  background: linear-gradient(135deg, #f00 0%, #ff0 25%, #0f0 50%, #0ff 75%, #00f 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.color-swatch.custom::after {
+  content: "+";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 2px rgba(0,0,0,0.6);
+}
+
+/* ── Modal layout ─────────────────────────────────────────────── */
 .modal-backdrop {
   display: none;
   position: fixed;

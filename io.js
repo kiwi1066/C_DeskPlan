@@ -52,21 +52,19 @@ export function loadSVG(containerId, svgFile, callback) {
 /**
  * Shared CSV builder.
  * @param {string[]} teamIds  — which teams to include in the #teams section
- * @param {object}   [meta]   — { buildingId, floorId } to embed in CSV
  */
-function buildCSV(teamIds, meta) {
+function buildCSV(teamIds) {
   const dayKeys = DAYS.map(d => d.key);
 
   // Section 1: teams manifest
   // #category must come before id,name so the parser sees it before skipNext fires
   const catLabel = AppState.categoryLabel || "Teams";
   let csv = `#teams\n`;
-  if (meta?.buildingId) csv += `#building,${meta.buildingId}\n`;
-  if (meta?.floorId)    csv += `#floor,${meta.floorId}\n`;
   csv += `#category,${catLabel}\n`;
-  csv += `id,name\n`;
+  csv += `id,name,color\n`;
   teamIds.forEach(id => {
-    csv += `${id},${AppState.teamNames[id]}\n`;
+    const manualColor = AppState.teamColors[id] || "";
+    csv += `${id},${AppState.teamNames[id]},${manualColor}\n`;
   });
 
   // Section 2: desk assignments
@@ -95,13 +93,13 @@ async function promptAndDownload(csv) {
 }
 
 /** Export all teams — including those with no desks assigned */
-export async function exportCSVAllTeams(meta) {
+export async function exportCSVAllTeams() {
   const teamIds = getSortedTeamIds();
-  await promptAndDownload(buildCSV(teamIds, meta));
+  await promptAndDownload(buildCSV(teamIds));
 }
 
 /** Export only teams that have at least one desk assigned on any day */
-export async function exportCSVAssignedTeams(meta) {
+export async function exportCSVAssignedTeams() {
   const assignedIds = new Set();
   DAYS.forEach(({ key }) => {
     Object.values(AppState.deskData).forEach(v => {
@@ -109,38 +107,10 @@ export async function exportCSVAssignedTeams(meta) {
     });
   });
   const teamIds = getSortedTeamIds().filter(id => assignedIds.has(id));
-  await promptAndDownload(buildCSV(teamIds, meta));
+  await promptAndDownload(buildCSV(teamIds));
 }
 
 // ── CSV — Desk data import ────────────────────────────────────────────────────
-
-/**
- * Read just the metadata header from a CSV file (building, floor, category).
- * Returns a Promise that resolves to { buildingId, floorId, category } | null.
- */
-export function peekCSVMeta(file) {
-  return new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const text  = e.target.result;
-      const lines = text.split("\n").slice(0, 30); // only need header area
-      let buildingId = null, floorId = null, category = null;
-      let inTeams = false;
-      for (const raw of lines) {
-        const line = raw.trim().replace(/\r/g, "");
-        if (line === "#teams") { inTeams = true; continue; }
-        if (line === "#data")  break;
-        if (!inTeams) continue;
-        if (line.startsWith("#building,")) buildingId = line.slice("#building,".length).trim();
-        if (line.startsWith("#floor,"))    floorId    = line.slice("#floor,".length).trim();
-        if (line.startsWith("#category,")) category   = line.slice("#category,".length).trim();
-      }
-      resolve({ buildingId, floorId, category });
-    };
-    reader.onerror = () => resolve(null);
-    reader.readAsText(file);
-  });
-}
 
 export function triggerImport() {
   triggerFileInput("fileInput");
@@ -182,9 +152,10 @@ export function handleDeskImport(file) {
         if (section === "teams") {
           const parts = line.split(",");
           if (parts.length < 2) return;
-          const id   = parts[0].trim();
-          const name = parts[1].trim();
-          if (id && name) addTeam(id, name);
+          const id    = parts[0].trim();
+          const name  = parts[1].trim();
+          const color = (parts[2] || "").trim();
+          if (id && name) addTeam(id, name, color || undefined);
         }
 
         if (section === "data") {

@@ -35,7 +35,11 @@ import {
   teamColor,
   assignDesks,
   registerDesk,
+  setTeamColor,
+  nextAutoColor,
 } from "./state.js";
+
+import { createColorPicker } from "./colorPicker.js";
 
 import { render as _render, applyHighlight, setTeamClickHandler, setTeamEditHandler } from "./render.js";
 
@@ -48,7 +52,6 @@ import {
   exportImage,
   setRenderCallback,
   setPromptCallback,
-  peekCSVMeta,
 } from "./io.js";
 
 import {
@@ -168,6 +171,14 @@ function openTeamEditModal(teamId) {
   _mel.editPanel.style.display   = "block";
   _mel.deletePanel.style.display = "none";
   _mel.modal.style.display       = "block";
+
+  // Set picker state from current team colour
+  const hasManual = !!AppState.teamColors[teamId];
+  _editPicker.set({
+    auto: !hasManual,
+    color: AppState.teamColors[teamId] || teamColor(teamId),
+  });
+
   _mel.input.focus();
   _mel.input.select();
 }
@@ -190,10 +201,21 @@ function showDeletePanel(teamId) {
   _mel.deletePanel.style.display = "block";
 }
 
+// Init edit-modal colour picker
+const _editPicker = createColorPicker({
+  gridEl: document.getElementById("teamEditSwatchGrid"),
+  autoEl: document.getElementById("teamEditAutoColor"),
+});
+
 document.getElementById("btn-team-edit-save").addEventListener("click", () => {
   const newName = _mel.input.value.trim();
   if (!newName || !_editingTeamId) return;
   renameTeam(_editingTeamId, newName);
+
+  // Apply colour choice
+  const { auto, color } = _editPicker.get();
+  setTeamColor(_editingTeamId, auto ? null : color);
+
   saveState();
   closeTeamEditModal();
   render();
@@ -588,14 +610,8 @@ bind("btn-zoom-in",    "click", zoomIn);
 bind("btn-zoom-out",   "click", zoomOut);
 bind("btn-zoom-reset", "click", resetZoom);
 bind("btn-import",        "click", triggerImport);
-bind("btn-export-all",      "click", () => {
-  const f = getCurrentFloor();
-  exportCSVAllTeams({ buildingId: f.buildingId, floorId: f.floorId });
-});
-bind("btn-export-assigned", "click", () => {
-  const f = getCurrentFloor();
-  exportCSVAssignedTeams({ buildingId: f.buildingId, floorId: f.floorId });
-});
+bind("btn-export-all",      "click", exportCSVAllTeams);
+bind("btn-export-assigned", "click", exportCSVAssignedTeams);
 bind("btn-export-image",  "click", () => {
   const floor = getCurrentFloor();
   exportImage(floor.plan, floorTitle());
@@ -624,64 +640,10 @@ bind("btn-cancel-copy",   "click", closeCopyModal);
 
 // ── File inputs ───────────────────────────────────────────────────────────────
 
-elFileInput.addEventListener("change", async e => {
+elFileInput.addEventListener("change", e => {
   const file = e.target.files[0];
-  elFileInput.value = "";
-  if (!file) return;
-
-  const meta = await peekCSVMeta(file);
-  const cur  = getCurrentFloor();
-
-  // If CSV has building/floor info and it differs from current view, ask user
-  if (meta?.buildingId && meta?.floorId &&
-      (meta.buildingId !== cur.buildingId || meta.floorId !== cur.floorId)) {
-
-    const buildings = getBuildings();
-    const targetBldg  = buildings[meta.buildingId];
-    const targetFloor = targetBldg?.floors?.find(f => f.id === meta.floorId);
-
-    if (!targetBldg || !targetFloor) {
-      await uiConfirm(
-        "Cannot Import",
-        `This file is for ${meta.buildingId} ${meta.floorId}, which isn't configured in this app.`,
-        "OK"
-      );
-      return;
-    }
-
-    const ok = await uiConfirm(
-      "Different Floor",
-      `This file is for ${targetBldg.label} — ${targetFloor.label}.\n\nYou are currently viewing ${cur.buildingLabel} — ${cur.floorLabel}.\n\nSwitch floor and import?`,
-      "Switch & Import"
-    );
-    if (!ok) return;
-
-    // Switch floor, then import after the new SVG has loaded
-    elBuilding.value = meta.buildingId;
-    populateFloorDropdown(meta.buildingId);
-    elFloor.value = meta.floorId;
-    switchFloorAndImport(meta.buildingId, meta.floorId, file);
-    return;
-  }
-
-  // Same floor (or no metadata) — import directly
-  handleDeskImport(file);
+  if (file) { handleDeskImport(file); elFileInput.value = ""; }
 });
-
-/** Switch floor, then import the file once the new floor is ready */
-function switchFloorAndImport(buildingId, floorId, file) {
-  switchFloor(buildingId, floorId);
-  // switchFloor's loadSVG callback runs render() then hideLoading().
-  // Wait for the loading overlay to hide before importing.
-  const checkReady = setInterval(() => {
-    if (elFloorLoading.style.display === "none") {
-      clearInterval(checkReady);
-      handleDeskImport(file);
-    }
-  }, 50);
-  // Safety timeout
-  setTimeout(() => clearInterval(checkReady), 5000);
-}
 
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
@@ -692,117 +654,56 @@ function toggleMultiMode() {
   btn.classList.toggle("btn-active", AppState.multiMode);
 }
 
-// ── Bulk Add Teams modal ──────────────────────────────────────────────────────
+// Init add-team modal colour picker
+const _addPicker = createColorPicker({
+  gridEl: document.getElementById("addTeamSwatchGrid"),
+  autoEl: document.getElementById("addTeamAutoColor"),
+});
 
-const MAX_BULK_TEAMS = 10;
+const _addTeamEls = {
+  modal:   document.getElementById("addTeamModal"),
+  title:   document.getElementById("addTeamTitle"),
+  input:   document.getElementById("addTeamInput"),
+  confirm: document.getElementById("addTeamConfirm"),
+  cancel:  document.getElementById("addTeamCancel"),
+};
 
-function openAddTeamsModal() {
-  const labelPlural   = AppState.categoryLabel || "Teams";
-  const labelSingular = labelPlural.replace(/s$/i, "");
-  document.getElementById("addTeamsTitle").textContent = `Add ${labelPlural}`;
-
-  const rowsEl = document.getElementById("addTeamsRows");
-  rowsEl.innerHTML = "";
-  addTeamsRow(labelSingular); // start with one row
-
-  document.getElementById("addTeamsModal").style.display = "block";
-  getModalBackdrop().classList.add("active");
-  updateAddTeamsCount();
-  rowsEl.querySelector("input")?.focus();
+function openAddTeamModal() {
+  const singular = (AppState.categoryLabel || "Teams").replace(/s$/i, "");
+  _addTeamEls.title.textContent = `Add ${singular}`;
+  _addTeamEls.input.value = "";
+  _addPicker.set({ auto: true, color: nextAutoColor() });
+  _addTeamEls.modal.style.display = "block";
+  document.getElementById("modalBackdrop").classList.add("active");
+  setTimeout(() => _addTeamEls.input.focus(), 30);
 }
 
-function closeAddTeamsModal() {
-  document.getElementById("addTeamsModal").style.display = "none";
-  getModalBackdrop().classList.remove("active");
+function closeAddTeamModal() {
+  _addTeamEls.modal.style.display = "none";
+  document.getElementById("modalBackdrop").classList.remove("active");
 }
 
-function getModalBackdrop() {
-  let el = document.getElementById("modalBackdrop");
-  if (!el) {
-    el = document.createElement("div");
-    el.id = "modalBackdrop";
-    el.className = "modal-backdrop";
-    document.body.appendChild(el);
-  }
-  return el;
-}
-
-function addTeamsRow(labelSingular) {
-  const rowsEl = document.getElementById("addTeamsRows");
-  if (rowsEl.children.length >= MAX_BULK_TEAMS) return;
-
-  const row = document.createElement("div");
-  row.style.cssText = "display:flex;gap:6px;align-items:center;margin-bottom:6px;";
-  row.innerHTML = `
-    <input type="text" class="ui-modal-input add-team-input" placeholder="${labelSingular} name" autocomplete="off" spellcheck="false" style="flex:1;">
-    <button class="btn-secondary remove-row-btn" title="Remove" style="padding:6px 10px;">✕</button>
-  `;
-  rowsEl.appendChild(row);
-
-  const input = row.querySelector("input");
-  input.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const inputs = [...rowsEl.querySelectorAll("input")];
-      const idx    = inputs.indexOf(input);
-      if (idx === inputs.length - 1 && rowsEl.children.length < MAX_BULK_TEAMS && input.value.trim()) {
-        addTeamsRow(labelSingular);
-        rowsEl.lastElementChild.querySelector("input").focus();
-      } else if (idx < inputs.length - 1) {
-        inputs[idx + 1].focus();
-      } else {
-        document.getElementById("btn-add-teams-create").click();
-      }
-    }
-    if (e.key === "Escape") closeAddTeamsModal();
-  });
-
-  row.querySelector(".remove-row-btn").addEventListener("click", () => {
-    if (rowsEl.children.length > 1) {
-      row.remove();
-      updateAddTeamsCount();
-    }
-  });
-
-  updateAddTeamsCount();
-}
-
-function updateAddTeamsCount() {
-  const rowsEl   = document.getElementById("addTeamsRows");
-  const countEl  = document.getElementById("addTeamsCount");
-  const addBtn   = document.getElementById("btn-add-team-row");
-  const n = rowsEl.children.length;
-  countEl.textContent = `${n} / ${MAX_BULK_TEAMS}`;
-  addBtn.disabled = n >= MAX_BULK_TEAMS;
-  addBtn.style.opacity = n >= MAX_BULK_TEAMS ? "0.4" : "1";
-}
-
-function createTeamsFromModal() {
-  const inputs = [...document.querySelectorAll("#addTeamsRows .add-team-input")];
-  const names  = inputs.map(i => i.value.trim()).filter(n => n);
-  if (!names.length) { closeAddTeamsModal(); return; }
-
-  names.forEach(name => {
-    const id = nextTeamId();
-    addTeam(id, name);
-  });
+function confirmAddTeam() {
+  const name = _addTeamEls.input.value.trim();
+  if (!name) return;
+  const id = nextTeamId();
+  const { auto, color } = _addPicker.get();
+  addTeam(id, name, auto ? undefined : color);
   saveState();
-  closeAddTeamsModal();
+  closeAddTeamModal();
   render();
 }
 
-function handleAddTeam() {
-  openAddTeamsModal();
-}
-
-// Bind multi-add modal buttons
-document.getElementById("btn-add-team-row").addEventListener("click", () => {
-  const labelSingular = (AppState.categoryLabel || "Teams").replace(/s$/i, "");
-  addTeamsRow(labelSingular);
-  document.getElementById("addTeamsRows").lastElementChild.querySelector("input").focus();
+_addTeamEls.confirm.addEventListener("click", confirmAddTeam);
+_addTeamEls.cancel.addEventListener("click", closeAddTeamModal);
+_addTeamEls.input.addEventListener("keydown", e => {
+  if (e.key === "Enter")  confirmAddTeam();
+  if (e.key === "Escape") closeAddTeamModal();
 });
-document.getElementById("btn-add-teams-create").addEventListener("click", createTeamsFromModal);
-document.getElementById("btn-add-teams-cancel").addEventListener("click", closeAddTeamsModal);
+
+function handleAddTeam() {
+  openAddTeamModal();
+}
 
 async function handleClearDesks() {
   const ok = await uiConfirm(
