@@ -94,13 +94,45 @@ export function nextTeamId() {
 }
 
 // ── Team colour ──────────────────────────────────────────────────────────────
-// Single unified colour function — no hardcoded map needed.
+// Curated palette of 20 distinguishable colours, cycling hue + lightness +
+// saturation so adjacent IDs never end up looking the same. Beyond 20 teams
+// we fall back to a hash-based HSL so colours stay stable but may repeat.
+
+const TEAM_PALETTE = [
+  "#e41a1c", // red
+  "#377eb8", // blue
+  "#4daf4a", // green
+  "#984ea3", // purple
+  "#ff7f00", // orange
+  "#ffd92f", // yellow
+  "#a65628", // brown
+  "#f781bf", // pink
+  "#17becf", // cyan
+  "#999999", // grey
+  "#8c1d40", // dark red
+  "#1f78b4", // navy
+  "#33a02c", // dark green
+  "#6a3d9a", // dark purple
+  "#b15928", // dark orange
+  "#bcbd22", // olive
+  "#7f7f7f", // dark grey
+  "#fb9a99", // light pink
+  "#a6cee3", // light blue
+  "#b2df8a", // light green
+];
+
+export const PALETTE_SIZE = TEAM_PALETTE.length;
 
 export function teamColor(teamId) {
   if (!teamId) return "transparent";
   const num = parseInt(teamId.replace("T", "")) || 0;
+  if (num >= 1 && num <= TEAM_PALETTE.length) {
+    return TEAM_PALETTE[num - 1];
+  }
+  // Fallback for teams beyond the palette
   const hue = (num * 47) % 360;
-  return `hsl(${hue}, 65%, 50%)`;
+  const lt  = 45 + (num % 3) * 8;
+  return `hsl(${hue}, 60%, ${lt}%)`;
 }
 
 // ── Desk assignment ───────────────────────────────────────────────────────────

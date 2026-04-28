@@ -9,6 +9,7 @@ import {
   getSortedTeamIds,
   teamColor,
   getDaySummary,
+  PALETTE_SIZE,
 } from "./state.js";
 
 // ── Floor plan colouring ──────────────────────────────────────────────────────
@@ -90,9 +91,9 @@ export function applyHighlight() {
     if (!shape) return;
 
     const selected = AppState.selectedDesks.includes(deskEl.id);
-    shape.setAttribute("stroke",       selected ? "#555" : "none");
-    shape.setAttribute("stroke-width", selected ? "1.8"  : "0");
-    shape.style.filter  = "none";
+    shape.setAttribute("stroke",       selected ? "#000" : "none");
+    shape.setAttribute("stroke-width", selected ? "2.5"  : "0");
+    shape.style.filter  = selected ? "drop-shadow(0 0 3px rgba(0,0,0,0.5))" : "none";
     shape.style.opacity = selected ? "1" : "0.85";
   });
 }
@@ -149,6 +150,14 @@ export function buildLegend(onTeamClick, onTeamEdit) {
 
     legend.appendChild(chip);
   });
+
+  // Soft warning when palette is exceeded
+  if (teamIds.length > PALETTE_SIZE) {
+    const warn = document.createElement("div");
+    warn.style.cssText = "width:100%;margin-top:6px;padding:6px 10px;background:#fff8ec;border-left:3px solid #f0a500;border-radius:4px;font-size:11px;color:#7a5a00;line-height:1.4;";
+    warn.innerHTML = `⚠ You have ${teamIds.length} ${(AppState.categoryLabel || "teams").toLowerCase()} — colours beyond ${PALETTE_SIZE} may start to look similar.`;
+    legend.appendChild(warn);
+  }
 }
 
 // ── Summary panel ─────────────────────────────────────────────────────────────
