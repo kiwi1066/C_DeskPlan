@@ -14,6 +14,9 @@ import {
   teamColor,
 } from "./state.js";
 
+import { getCurrentFloor } from "./buildings.js";
+import { uiConfirm }       from "./modal.js";
+
 // Render callback — set by app.js so io.js calls the full wrapped render
 let _renderFn = null;
 export function setRenderCallback(fn) { _renderFn = fn; }
@@ -55,11 +58,15 @@ export function loadSVG(containerId, svgFile, callback) {
  */
 function buildCSV(teamIds) {
   const dayKeys = DAYS.map(d => d.key);
+  const floor   = getCurrentFloor();
 
   // Section 1: teams manifest
-  // #category must come before id,name so the parser sees it before skipNext fires
+  // Metadata lines (#category, #building, #floor) come before id,name so the
+  // parser sees them before skipNext fires
   const catLabel = AppState.categoryLabel || "Teams";
   let csv = `#teams\n`;
+  csv += `#building,${floor.buildingId || ""}\n`;
+  csv += `#floor,${floor.floorId || ""}\n`;
   csv += `#category,${catLabel}\n`;
   csv += `id,name,color\n`;
   teamIds.forEach(id => {
@@ -116,8 +123,46 @@ export function triggerImport() {
   triggerFileInput("fileInput");
 }
 
+/** Reads metadata from a CSV without applying changes — for the pre-import floor check */
+function peekCsvMeta(text) {
+  const meta = { building: null, floor: null };
+  const lines = text.split("\n");
+  let inTeams = false;
+  for (const raw of lines) {
+    const line = raw.trim().replace(/\r/g, "");
+    if (line === "#teams") { inTeams = true; continue; }
+    if (line === "#data")  break;
+    if (!inTeams) continue;
+    if (line.startsWith("#building,")) meta.building = line.slice("#building,".length).trim();
+    if (line.startsWith("#floor,"))    meta.floor    = line.slice("#floor,".length).trim();
+  }
+  return meta;
+}
+
 export function handleDeskImport(file) {
-  readText(file, text => {
+  readText(file, async text => {
+    // Floor check — only if file has metadata. Older CSVs without it skip the check.
+    const meta    = peekCsvMeta(text);
+    const current = getCurrentFloor();
+
+    if (meta.building && meta.floor) {
+      const mismatch = meta.building !== current.buildingId || meta.floor !== current.floorId;
+      if (mismatch) {
+        const ok = await uiConfirm(
+          "Wrong Floor?",
+          `This file is for ${meta.building} — ${meta.floor}, but you're currently on ${current.buildingId} — ${current.floorId}. Import anyway?`,
+          "Import Anyway",
+          true
+        );
+        if (!ok) return;
+      }
+    }
+
+    parseAndApplyCsv(text);
+  });
+}
+
+function parseAndApplyCsv(text) {
     const lines = text.split("\n");
 
     // Detect new format (has #teams section) vs old format
@@ -143,6 +188,7 @@ export function handleDeskImport(file) {
             const restoredLabel = line.slice("#category,".length).trim();
             if (restoredLabel) AppState.categoryLabel = restoredLabel;
           }
+          // #building and #floor are handled by peekCsvMeta — ignored here
           return;
         }
 
@@ -191,7 +237,6 @@ export function handleDeskImport(file) {
 
     saveState();
     doRender();
-  });
 }
 
 // ── CSV — Teams import ────────────────────────────────────────────────────────
