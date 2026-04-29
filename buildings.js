@@ -63,6 +63,12 @@ export function getFloors(buildingId) {
   return _buildings[buildingId]?.floors ?? [];
 }
 
+/** True if the given building+floor combination exists in the config */
+export function floorExists(buildingId, floorId) {
+  const floors = _buildings[buildingId]?.floors ?? [];
+  return floors.some(f => f.id === floorId);
+}
+
 /** Unique localStorage key for the current floor */
 export function storageKey() {
   return `deskPlanner_${_buildingId}_${_floorId}`;

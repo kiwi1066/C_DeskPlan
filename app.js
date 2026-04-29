@@ -53,6 +53,7 @@ import {
   exportImage,
   setRenderCallback,
   setPromptCallback,
+  setSwitchFloorCallback,
 } from "./io.js";
 
 import {
@@ -98,6 +99,12 @@ setRenderCallback(render);
 
 // Give io.js access to the styled prompt modal
 setPromptCallback((title, label, defaultVal) => uiPrompt(title, label, defaultVal));
+
+// Give io.js access to switchFloor so the import floor-mismatch dialog can
+// switch the app to the file's building/floor before importing
+setSwitchFloorCallback((buildingId, floorId, onComplete) => {
+  switchFloor(buildingId, floorId, onComplete);
+});
 
 // ── Safe event binder ─────────────────────────────────────────────────────────
 
@@ -319,7 +326,7 @@ function hideLoading() {
  *  - Restores saved state for new floor
  *  - Re-renders
  */
-function switchFloor(buildingId, floorId) {
+function switchFloor(buildingId, floorId, onComplete) {
   // Save current floor before leaving
   saveState();
 
@@ -384,6 +391,16 @@ function switchFloor(buildingId, floorId) {
 
     render();
     hideLoading();
+
+    // Sync the dropdowns with the new floor (in case switch was triggered
+    // programmatically e.g. by the import floor-mismatch dialog)
+    if (elBuilding.value !== buildingId) {
+      elBuilding.value = buildingId;
+      populateFloorDropdown(buildingId);
+    }
+    if (elFloor.value !== floorId) elFloor.value = floorId;
+
+    if (typeof onComplete === "function") onComplete();
   });
 }
 

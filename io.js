@@ -14,13 +14,18 @@ import {
   teamColor,
 } from "./state.js";
 
-import { getCurrentFloor } from "./buildings.js";
-import { uiConfirm }       from "./modal.js";
+import { getCurrentFloor, floorExists } from "./buildings.js";
+import { uiConfirm, uiChoice }          from "./modal.js";
 
 // Render callback — set by app.js so io.js calls the full wrapped render
 let _renderFn = null;
 export function setRenderCallback(fn) { _renderFn = fn; }
 function doRender() { if (_renderFn) _renderFn(); }
+
+// Switch-floor callback — set by app.js so io.js can trigger a floor change
+// from the import floor-mismatch dialog
+let _switchFloorFn = null;
+export function setSwitchFloorCallback(fn) { _switchFloorFn = fn; }
 
 // ── SVG loader ────────────────────────────────────────────────────────────────
 
@@ -141,20 +146,37 @@ function peekCsvMeta(text) {
 
 export function handleDeskImport(file) {
   readText(file, async text => {
-    // Floor check — only if file has metadata. Older CSVs without it skip the check.
     const meta    = peekCsvMeta(text);
     const current = getCurrentFloor();
 
     if (meta.building && meta.floor) {
       const mismatch = meta.building !== current.buildingId || meta.floor !== current.floorId;
+
       if (mismatch) {
-        const ok = await uiConfirm(
-          "Wrong Floor?",
-          `This file is for ${meta.building} — ${meta.floor}, but you're currently on ${current.buildingId} — ${current.floorId}. Import anyway?`,
-          "Import Anyway",
-          true
-        );
-        if (!ok) return;
+        const canSwitch = floorExists(meta.building, meta.floor) && _switchFloorFn;
+
+        const options = [];
+        if (canSwitch) {
+          options.push({ label: `Switch to ${meta.building} ${meta.floor} & Import`, value: "switch" });
+        }
+        options.push({ label: "Import to current floor", value: "current", style: "secondary" });
+        options.push({ label: "Cancel", value: "cancel", style: "secondary" });
+
+        const message = canSwitch
+          ? `This file is for ${meta.building} — ${meta.floor}, but you're currently on ${current.buildingId} — ${current.floorId}.`
+          : `This file is for ${meta.building} — ${meta.floor}, but you're currently on ${current.buildingId} — ${current.floorId}. That floor isn't configured in this app, so switching isn't possible.`;
+
+        const choice = await uiChoice("Wrong Floor?", message, options);
+
+        if (!choice || choice === "cancel") return;
+
+        if (choice === "switch") {
+          // Hand off to app.js — it switches floor, then runs our callback
+          // once the new SVG and saved state are loaded.
+          _switchFloorFn(meta.building, meta.floor, () => parseAndApplyCsv(text));
+          return;
+        }
+        // choice === "current" → fall through and import onto current floor
       }
     }
 
